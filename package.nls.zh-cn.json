@@ -13,5 +13,10 @@
   "cfg.sequence.start": "序号区重新编号时的起始值。",
   "cfg.sequence.step": "序号区重新编号时的步长。",
   "cfg.copybook.paths": "查找 copybook（`COPY 名称`）的文件夹，在当前文件所在文件夹之后搜索。相对路径以工作区文件夹为基准，支持 `${workspaceFolder}`。`COPY 名称 OF 库名` 时还会查找名为该库名的子文件夹。",
-  "cfg.copybook.extensions": "按顺序尝试的 copybook 扩展名（不区分大小写）。\"\" 表示名称本身。"
+  "cfg.copybook.extensions": "按顺序尝试的 copybook 扩展名（不区分大小写）。\"\" 表示名称本身。",
+  "cfg.sourceFormat": "源码书写形式（NetCOBOL 编译选项 SRF）。",
+  "cfg.sourceFormat.auto": "读取源码里的 @OPTIONS SRF(...)；没有则按固定形式。",
+  "cfg.sourceFormat.fixed": "固定形式：第73-80列为标识区。",
+  "cfg.sourceFormat.variable": "可变形式：没有第72列的右边界。",
+  "cfg.sourceFormat.free": "自由形式：不做列检查、淡化和重新编号。"
 }

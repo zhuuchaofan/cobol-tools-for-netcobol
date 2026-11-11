@@ -44,8 +44,16 @@
 | NC012 | 情報 | 一連番号が空白（連続する行はまとめて1件） |
 | NC013 | 情報 | 一連番号が6桁の数字でない |
 | NC014 | 情報 | 一連番号が前の行より大きくない |
+| NC015 | エラー | 定数の中身が不正（`X"…"` は16進2桁ずつ、`NX"…"` は4桁ずつ、`B"…"` は 0/1、`N"…"`/`NC"…"` は全角のみ） |
+| NC016 | 警告 | 部・節の見出しの後に終止符がない |
+| NC017 | 警告 | 使えないレベル番号（01〜49、66、77、88 以外） |
+| NC018 | エラー | 予約語をデータ名・段落名・ファイル名に使っている |
 
 メッセージは VS Code の表示言語（日本語／English／简体中文）に合わせて表示されます。
+
+- 7桁目が `D` のデバッグ行は、`SOURCE-COMPUTER` に `WITH DEBUGGING MODE` がなければ注記行として扱い、斜体・薄色で表示します
+- `@OPTIONS SRF(VAR)` があれば可変形式（72桁の右端制限なし）、`SRF(FREE)` なら自由形式として桁チェックを止めます（設定 `netcobol.sourceFormat` でも指定可）
+- 予約語・組込み関数の一覧は COBOL 85 規格と NetCOBOL の一般的な拡張に基づいています。COBOL文法書との突き合わせは今後行います
 
 ### 一連番号の振り直し
 - 右クリックメニュー、またはコマンドパレットの「NetCOBOL: 一連番号（1〜6桁）の振り直し」
@@ -57,7 +65,7 @@
 ### アウトライン・折りたたみ・定義へ移動
 - **アウトライン**（エクスプローラーのアウトライン、`Ctrl+Shift+O`、パンくず）：プログラム → 部 → 節 → 段落、データ部は FD → 01 → 05 … → 88 の階層で表示。`PIC` もあわせて表示
 - **折りたたみ**：部・節・段落・集団項目・連続する注記行・`EXEC SQL` ブロック
-- **定義へ移動**（`F12` / `Ctrl+クリック`）：段落名・節名・データ名・ファイル名。見つからなければ `COPY` している登録集原文の中も探します（3階層まで）
+- **定義へ移動**（`F12` / `Ctrl+クリック`）：段落名・節名・データ名・ファイル名。見つからなければ `COPY` している登録集原文の中も探します（3階層まで）。`A OF B` の修飾、`COPY … REPLACING ==:PRE:== BY ==WS==` の置き換えも考慮します
 - **COPY 句**：登録集原文の名前の上で `F12` / `Ctrl+クリック` するとそのファイルを開きます
   - 探す場所：編集中のファイルと同じフォルダー → `netcobol.copybook.paths` のフォルダー
   - 拡張子：なし・`.cbl`・`.cob`・`.cpy`・`.cobol` の順（大文字小文字は区別しない）
@@ -99,6 +107,7 @@ VSCodium・Cursor などは [Open VSX](https://open-vsx.org/extension/zhuuchaofa
 | 設定 | 既定値 | 説明 |
 |---|---|---|
 | `netcobol.columnCounting` | `shiftjis` | 桁の数え方：`shiftjis` / `utf8` / `character` |
+| `netcobol.sourceFormat` | `auto` | 正書法：`auto`（`@OPTIONS SRF` から判定）/ `fixed` / `variable` / `free` |
 | `netcobol.diagnostics.enabled` | `true` | 書式チェックを有効にする |
 | `netcobol.diagnostics.maxLineLength` | `80` | 1行の上限桁数（0 で無効） |
 | `netcobol.diagnostics.disabledRules` | `[]` | 無効にするルール（例：`["NC010", "NC012"]`） |
@@ -111,10 +120,10 @@ VSCodium・Cursor などは [Open VSX](https://open-vsx.org/extension/zhuuchaofa
 UTF-8 のソースでは `files.encoding` を `utf8`、`netcobol.columnCounting` を `utf8` にしてください。
 
 ## 制限事項
-- 固定形式のみ対応です。可変形式・自由形式のソースでは桁チェックが合いません（チェックは無効にできます）
+- 固定形式・可変形式に対応しています。自由形式はハイライトのみで、桁チェック・アウトラインは行いません
 - Shift_JIS の桁数は「ASCII・半角カナ＝1、それ以外＝2」で計算しています
 - B領域から始まる段落名はチェックしません（複数行にわたる文と区別できないため）
-- アウトライン・定義へ移動は行単位の簡易解析です。`COPY … REPLACING` の置き換えや修飾（`OF` / `IN`）は考慮しません
+- アウトライン・定義へ移動は行単位の簡易解析です。`REPLACE` 文は考慮しません
 
 ## フィードバック・貢献
 不具合報告や要望は [Issues](https://github.com/zhuuchaofan/cobol-tools-for-netcobol/issues) へ（日本語・English・中文 OK）。

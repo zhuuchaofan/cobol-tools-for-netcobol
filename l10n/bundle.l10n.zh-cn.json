@@ -18,5 +18,13 @@
   "Sequence numbers would exceed {0}. Use a smaller start or step (netcobol.sequence.start / netcobol.sequence.step).": "序号会超过 {0}。请调小起始值或步长（netcobol.sequence.start / netcobol.sequence.step）。",
   "Sequence area is already in order.": "序号区已经是整齐的。",
   "Renumbered {0} lines ({1}-{2}).": "已重新编号 {0} 行（{1}-{2}）。",
-  "{0} line(s) skipped because a full-width character straddles columns 6 and 7: line {1}": "有 {0} 行因全角字符跨在第6、7列而跳过：第 {1} 行"
+  "{0} line(s) skipped because a full-width character straddles columns 6 and 7: line {1}": "有 {0} 行因全角字符跨在第6、7列而跳过：第 {1} 行",
+  "Hexadecimal literal X\"...\" must consist of pairs of hexadecimal digits (0-9, A-F).": "16进制字符常量 X\"…\" 必须由成对（偶数个）的 0-9、A-F 组成。",
+  "National hexadecimal literal NX\"...\" must consist of hexadecimal digits in groups of four.": "日文16进制常量 NX\"…\" 的16进制数字必须是4的倍数。",
+  "Boolean literal B\"...\" may contain only 0 and 1.": "布尔常量 B\"…\" 只能包含 0 和 1。",
+  "National literal N\"...\" / NC\"...\" may contain only full-width characters.": "日文常量 N\"…\" / NC\"…\" 只能包含全角字符。",
+  "Header \"{0}\" must be followed by a separator period.": "标题“{0}”后面必须有句点（.）。",
+  "Level number {0} is not valid (01-49, 66, 77, 88).": "层号 {0} 无效（只能是 01-49、66、77、88）。",
+  "\"{0}\" is a reserved word and cannot be used as a user-defined name.": "“{0}”是保留字，不能用作用户定义名。",
+  "This source is in free format (SRF(FREE)) and has no sequence area.": "自由形式（SRF(FREE)）的源码没有序号区。"
 }

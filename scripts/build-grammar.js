@@ -30,91 +30,25 @@ const alt = (list) =>
 const kw = (list) => `${NB}(?i:${alt(list)})${NA}`;
 
 // ---------------------------------------------------------------- keywords
+// Word lists live in src/core/keywords.ts (compiled to out/ before this script runs).
+const K = require('../out/core/keywords.js');
+const CONTROL_TERMINATORS = ['END-IF', 'END-PERFORM', 'END-EVALUATE', 'END-CALL', 'END-INVOKE'];
 const CONTROL = [
-  'PERFORM', 'END-PERFORM', 'IF', 'THEN', 'ELSE', 'END-IF', 'EVALUATE', 'WHEN',
-  'OTHER', 'END-EVALUATE', 'GO', 'GOBACK', 'STOP', 'RUN', 'EXIT', 'CALL',
-  'END-CALL', 'CANCEL', 'CONTINUE', 'NEXT', 'SENTENCE', 'UNTIL', 'VARYING',
-  'THRU', 'THROUGH', 'TIMES', 'ALTER', 'INVOKE', 'END-INVOKE', 'RAISE',
-  'RESUME', 'ENTRY', 'USE', 'DECLARATIVES', 'ALSO', 'TEST', 'WITH'
+  ...K.VERBS_CONTROL, ...CONTROL_TERMINATORS, 'THEN', 'ELSE', 'WHEN', 'OTHER', 'UNTIL',
+  'VARYING', 'THRU', 'THROUGH', 'TIMES', 'NEXT', 'SENTENCE', 'RUN', 'ALSO', 'TEST', 'WITH',
+  'DECLARATIVES'
 ];
-
 const VERBS = [
-  'ACCEPT', 'ADD', 'CLOSE', 'COMPUTE', 'DELETE', 'DISPLAY', 'DIVIDE',
-  'GENERATE', 'INITIALIZE', 'INITIATE', 'INSPECT', 'MERGE', 'MOVE', 'MULTIPLY',
-  'OPEN', 'READ', 'RELEASE', 'RETURN', 'REWRITE', 'SEARCH', 'SET', 'SORT',
-  'START', 'STRING', 'SUBTRACT', 'SUPPRESS', 'TERMINATE', 'UNSTRING', 'WRITE',
-  'REPLACE', 'UNLOCK', 'RECEIVE', 'SEND', 'ENABLE', 'DISABLE', 'PURGE',
-  'END-ADD', 'END-COMPUTE', 'END-DELETE', 'END-DIVIDE', 'END-MULTIPLY',
-  'END-READ', 'END-RETURN', 'END-REWRITE', 'END-SEARCH', 'END-START',
-  'END-STRING', 'END-SUBTRACT', 'END-UNSTRING', 'END-WRITE', 'END-ACCEPT',
-  'END-DISPLAY', 'END-RECEIVE'
+  ...K.VERBS.filter((w) => w !== 'COPY'),
+  ...K.SCOPE_TERMINATORS.filter((w) => !CONTROL_TERMINATORS.includes(w) && w !== 'END-EXEC')
 ];
-
-// data description clauses / usages
-const CLAUSES = [
-  'PIC', 'PICTURE', 'VALUE', 'VALUES', 'REDEFINES', 'RENAMES', 'OCCURS',
-  'DEPENDING', 'INDEXED', 'KEY', 'ASCENDING', 'DESCENDING', 'USAGE', 'COMP',
-  'COMP-1', 'COMP-2', 'COMP-3', 'COMP-4', 'COMP-5', 'COMPUTATIONAL',
-  'COMPUTATIONAL-1', 'COMPUTATIONAL-2', 'COMPUTATIONAL-3', 'COMPUTATIONAL-4',
-  'COMPUTATIONAL-5', 'BINARY', 'PACKED-DECIMAL', 'DISPLAY-1', 'NATIONAL',
-  'INDEX', 'POINTER', 'PROGRAM-POINTER', 'REFERENCE', 'SIGN', 'LEADING',
-  'TRAILING', 'SEPARATE', 'CHARACTER', 'SYNC', 'SYNCHRONIZED', 'JUST',
-  'JUSTIFIED', 'BLANK', 'EXTERNAL', 'GLOBAL', 'FILLER', 'TYPEDEF', 'TYPE',
-  'BASED', 'CONSTANT', 'FLOAT-SHORT', 'FLOAT-LONG', 'FLOAT-EXTENDED',
-  'BLOCK', 'CONTAINS', 'RECORD', 'RECORDS', 'RECORDING', 'LABEL', 'STANDARD',
-  'OMITTED', 'CODE-SET', 'LINAGE', 'FOOTING', 'TOP', 'BOTTOM',
-  // screen section
-  'AUTO', 'AUTO-SKIP', 'BELL', 'BLINK', 'FOREGROUND-COLOR', 'BACKGROUND-COLOR',
-  'HIGHLIGHT', 'LOWLIGHT', 'REVERSE-VIDEO', 'UNDERLINE', 'SECURE', 'REQUIRED',
-  'FULL', 'COLUMN', 'COL', 'ERASE', 'EOL', 'EOS', 'PROMPT'
-];
-
-// environment / identification division words
-const ENVIRONMENT = [
-  'SELECT', 'ASSIGN', 'OPTIONAL', 'ORGANIZATION', 'SEQUENTIAL', 'LINE',
-  'RELATIVE', 'ACCESS', 'MODE', 'RANDOM', 'DYNAMIC', 'ALTERNATE', 'DUPLICATES',
-  'STATUS', 'FILE', 'LOCK', 'SHARING', 'RESERVE', 'AREA', 'AREAS', 'PADDING',
-  'CONFIGURATION', 'SOURCE-COMPUTER', 'OBJECT-COMPUTER', 'SPECIAL-NAMES',
-  'INPUT-OUTPUT', 'FILE-CONTROL', 'I-O-CONTROL', 'REPOSITORY', 'PROGRAM-ID',
-  'AUTHOR', 'INSTALLATION', 'DATE-WRITTEN', 'DATE-COMPILED', 'SECURITY',
-  'CLASS-ID', 'METHOD-ID', 'FACTORY', 'OBJECT', 'CLASS', 'METHOD', 'INHERITS',
-  'PROPERTY', 'PROGRAM', 'CURRENCY', 'DECIMAL-POINT', 'COMMA', 'ALPHABET',
-  'SYMBOLIC', 'CRT', 'CURSOR', 'COLLATING', 'SEQUENCE', 'NATIVE', 'MEMORY',
-  'SIZE', 'SEGMENT-LIMIT', 'COMMON', 'INITIAL', 'RECURSIVE', 'IS'
-];
-
-const OTHER = [
-  'TO', 'FROM', 'BY', 'INTO', 'GIVING', 'USING', 'RETURNING', 'REMAINDER',
-  'ROUNDED', 'ON', 'OFF', 'ERROR', 'OVERFLOW', 'EXCEPTION', 'INVALID', 'AT',
-  'END', 'EOP', 'END-OF-PAGE', 'NO', 'ADVANCING', 'UPON', 'OF', 'IN', 'ALL',
-  'INPUT', 'OUTPUT', 'I-O', 'EXTEND', 'REVERSED', 'REWIND', 'REPLACING',
-  'TALLYING', 'CONVERTING', 'FOR', 'FIRST', 'DELIMITED', 'DELIMITER', 'COUNT',
-  'CORRESPONDING', 'CORR', 'NUMERIC', 'ALPHABETIC', 'ALPHABETIC-LOWER',
-  'ALPHABETIC-UPPER', 'POSITIVE', 'NEGATIVE', 'BEFORE', 'AFTER', 'PAGE',
-  'LINES', 'CONTENT', 'AS', 'ANY', 'REMOVAL', 'UNIT', 'REEL', 'AND', 'OR',
-  'NOT', 'ARE', 'EQUAL', 'EQUALS', 'GREATER', 'LESS', 'THAN', 'CHARACTERS',
-  'DATA', 'DIVISION', 'SECTION', 'ORDER', 'BOTH'
-];
-
-const FIGURATIVE = [
-  'ZERO', 'ZEROS', 'ZEROES', 'SPACE', 'SPACES', 'HIGH-VALUE', 'HIGH-VALUES',
-  'LOW-VALUE', 'LOW-VALUES', 'QUOTE', 'QUOTES', 'NULL', 'NULLS', 'TRUE', 'FALSE'
-];
-
-// special registers + NetCOBOL function-names / ACCEPT sources
-const SPECIAL = [
-  'RETURN-CODE', 'SORT-RETURN', 'TALLY', 'LENGTH', 'ADDRESS', 'WHEN-COMPILED',
-  'LINAGE-COUNTER', 'PROGRAM-STATUS', 'SELF', 'SUPER',
-  'SYSIN', 'SYSOUT', 'SYSERR', 'CONSOLE', 'ARGUMENT-NUMBER', 'ARGUMENT-VALUE',
-  'ENVIRONMENT-NAME', 'ENVIRONMENT-VALUE', 'DATE', 'DAY', 'DAY-OF-WEEK',
-  'TIME', 'YYYYMMDD', 'YYYYDDD'
-];
-
-const ALL_KEYWORDS = [
-  ...CONTROL, ...VERBS, ...CLAUSES, ...ENVIRONMENT, ...OTHER, ...FIGURATIVE,
-  ...SPECIAL, 'COPY', 'FUNCTION', 'EXEC', 'END-EXEC', 'IDENTIFICATION', 'ID',
-  'ENVIRONMENT', 'PROCEDURE', 'FD', 'SD', 'RD', 'CD'
-];
+const CLAUSES = [...K.CLAUSES, ...K.USAGES, ...K.SCREEN_WORDS];
+const ENVIRONMENT = [...K.ENVIRONMENT, ...K.STRUCTURE];
+const OTHER = [...K.PHRASES, ...K.CONDITION_WORDS];
+const FIGURATIVE = K.FIGURATIVE;
+const SPECIAL = [...K.SPECIAL_REGISTERS, ...K.ACCEPT_SOURCES, ...K.SYSTEM_NAMES];
+const FUNCTIONS = K.INTRINSIC_FUNCTIONS;
+const ALL_KEYWORDS = [...K.ALL_KEYWORDS, ...K.SYSTEM_NAMES];
 const NOT_KEYWORD = `(?!(?i:${alt(ALL_KEYWORDS)})${NA})`;
 
 const LEVEL = '(?:0?[1-9]|[1-4][0-9]|66|77|88)';
@@ -275,6 +209,15 @@ const repository = {
     ]
   },
 
+  // COPY ... REPLACING ==a== BY ==b== / REPLACE ==a== BY ==b==
+  'pseudo-text': {
+    begin: '==',
+    beginCaptures: { 0: { name: 'punctuation.definition.string.begin.netcobol' } },
+    end: '==|$',
+    endCaptures: { 0: { name: 'punctuation.definition.string.end.netcobol' } },
+    name: 'string.other.pseudo-text.netcobol'
+  },
+
   picture: {
     match: `${NB}((?i:PICTURE|PIC))(?:(\\s+)((?i:IS)))?(\\s+)(\\S+?)(?=\\.?(?:\\s|$))`,
     captures: {
@@ -361,6 +304,13 @@ const repository = {
         }
       },
       {
+        match: `${NB}((?i:FUNCTION))(\\s+)((?i:${alt(FUNCTIONS)}))${NA}`,
+        captures: {
+          1: { name: 'keyword.other.netcobol' },
+          3: { name: 'support.function.builtin.netcobol' }
+        }
+      },
+      {
         match: `${NB}((?i:FUNCTION))(\\s+)(${WORD})`,
         captures: {
           1: { name: 'keyword.other.netcobol' },
@@ -407,6 +357,7 @@ const repository = {
       { include: '#floating-comment' },
       { include: '#directive' },
       { include: '#exec-sql' },
+      { include: '#pseudo-text' },
       { include: '#strings' },
       { include: '#copy' },
       { include: '#picture' },

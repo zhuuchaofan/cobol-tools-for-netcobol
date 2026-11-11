@@ -40,8 +40,16 @@
 | NC012 | 信息 | 序号区为空（连续的行合并成一条） |
 | NC013 | 信息 | 序号区不是 6 位数字 |
 | NC014 | 信息 | 序号没有比上一行大 |
+| NC015 | 错误 | 常量内容不合法（`X"…"` 须成对的16进制、`NX"…"` 须4位一组、`B"…"` 只能 0/1、`N"…"`/`NC"…"` 只能全角） |
+| NC016 | 警告 | DIVISION / SECTION 标题后缺少句点 |
+| NC017 | 警告 | 无效层号（01-49、66、77、88 以外） |
+| NC018 | 错误 | 把保留字用作数据名、段落名或文件名 |
 
 提示信息跟随 VS Code 显示语言（日本語 / English / 简体中文）。
+
+- 第 7 列为 `D` 的调试行：`SOURCE-COMPUTER` 没写 `WITH DEBUGGING MODE` 时按注释行处理，并以斜体淡化显示
+- 有 `@OPTIONS SRF(VAR)` 时按可变形式（没有第 72 列右边界）；`SRF(FREE)` 时按自由形式关闭列检查（也可用设置 `netcobol.sourceFormat` 指定）
+- 保留字和内置函数列表基于 COBOL 85 标准与 NetCOBOL 常见扩展，之后会再对照 COBOL文法書 核对
 
 ### 序号区重新编号
 - 编辑器右键菜单，或命令面板「NetCOBOL: 序号区（第1-6列）重新编号」
@@ -53,7 +61,7 @@
 ### 大纲、折叠、跳转定义
 - **大纲**（资源管理器的大纲视图、`Ctrl+Shift+O`、面包屑）：程序 → DIVISION → SECTION → 段落；数据部按 FD → 01 → 05 … → 88 层级显示，并附带 `PIC`
 - **折叠**：DIVISION、SECTION、段落、组项目、连续注释行、`EXEC SQL` 块
-- **跳转定义**（`F12` / `Ctrl+点击`）：段落名、SECTION 名、数据名、文件名；当前文件找不到时，会继续在 `COPY` 进来的 copybook 里找（最多 3 层）
+- **跳转定义**（`F12` / `Ctrl+点击`）：段落名、SECTION 名、数据名、文件名；当前文件找不到时，会继续在 `COPY` 进来的 copybook 里找（最多 3 层）。支持 `A OF B` 限定名和 `COPY … REPLACING ==:PRE:== BY ==WS==` 替换
 - **COPY 句**：在 copybook 名上 `F12` / `Ctrl+点击` 直接打开该文件
   - 查找位置：当前文件所在文件夹 → `netcobol.copybook.paths` 里的文件夹
   - 扩展名：无扩展名、`.cbl`、`.cob`、`.cpy`、`.cobol` 依次尝试（不区分大小写）
@@ -95,6 +103,7 @@ VSCodium、Cursor 等请从 [Open VSX](https://open-vsx.org/extension/zhuuchaofa
 | 设置项 | 默认值 | 说明 |
 |---|---|---|
 | `netcobol.columnCounting` | `shiftjis` | 列计算方式：`shiftjis` / `utf8` / `character` |
+| `netcobol.sourceFormat` | `auto` | 书写形式：`auto`（读取 `@OPTIONS SRF`）/ `fixed` / `variable` / `free` |
 | `netcobol.diagnostics.enabled` | `true` | 启用诊断 |
 | `netcobol.diagnostics.maxLineLength` | `80` | 行长上限（0 为不检查） |
 | `netcobol.diagnostics.disabledRules` | `[]` | 关闭指定规则，例如 `["NC010", "NC012"]` |
@@ -107,10 +116,10 @@ VSCodium、Cursor 等请从 [Open VSX](https://open-vsx.org/extension/zhuuchaofa
 UTF-8 源码：把 `files.encoding` 改为 `utf8`，`netcobol.columnCounting` 设为 `utf8`。
 
 ## 限制
-- 只支持固定形式；可变形式 / 自由形式源码的列检查会不准（可关闭诊断）
+- 支持固定形式和可变形式；自由形式只有高亮，不做列检查和大纲
 - Shift_JIS 宽度按「ASCII・半角片假名 = 1，其余 = 2」计算
 - 不检查写在 B 区的段落名（与跨行语句难以区分）
-- 大纲和跳转是按行的简易解析，不处理 `COPY … REPLACING` 的替换和限定名（`OF` / `IN`）
+- 大纲和跳转是按行的简易解析，不处理 `REPLACE` 语句
 
 ## 反馈与贡献
 问题和需求请提交到 [Issues](https://github.com/zhuuchaofan/cobol-tools-for-netcobol/issues)（日本語・English・中文均可）。

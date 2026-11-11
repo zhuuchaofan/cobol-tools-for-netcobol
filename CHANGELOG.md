@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+- 予約語・組込み関数の一覧を `src/core/keywords.ts` に整理（COBOL 85 規格＋NetCOBOL の一般的な拡張。文法書との突き合わせは今後）
+- 新しいチェック：NC015 定数の中身（X / NX / B / N / NC）、NC016 見出しの終止符、NC017 レベル番号、NC018 予約語の利用者語使用
+- `WITH DEBUGGING MODE` がなければ `D` 行を注記行として扱う（斜体・薄色表示）
+- `@OPTIONS SRF(VAR / FREE)` と設定 `netcobol.sourceFormat` で可変形式・自由形式に対応
+- 擬似テキスト `==…==` のハイライト、既知の組込み関数名のハイライト
+- 定義へ移動で修飾（`A OF B`）と `COPY … REPLACING` を考慮
+
 ## 0.3.0
 - 名称を「COBOL Tools for NetCOBOL」に変更（非公式であることを明記）、Marketplace / Open VSX での公開準備
 - アイコン、日本語・英語・中国語の README、CI（Windows / macOS / Linux）と自動リリース

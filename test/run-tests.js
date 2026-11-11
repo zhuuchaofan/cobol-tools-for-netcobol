@@ -263,6 +263,65 @@ const codesAt = (diags) => diags.map((d) => `${d.line + 1}:${d.code}`).sort();
     assert.deepStrictEqual(outline(two.roots[1].children), ['IDENTIFICATION DIVISION', 'PROCEDURE DIVISION']); // EXIT. is not a paragraph
   });
 
+  console.log('grammar rules (v0.4)');
+  const codes = (lines, opts = OPTS) => analyze(lines, opts).map((d) => `${d.line + 1}:${d.code}`);
+  await test('NC015 literal contents', () => {
+    const got = codes([
+      '000010 WORKING-STORAGE SECTION.',
+      '000020 01  A  PIC X(2) VALUE X"0D0".',
+      '000030 01  B  PIC X(2) VALUE X"0d0A".',
+      '000040 01  C  PIC N(2) VALUE NC"あA".',
+      '000050 01  D  PIC N(2) VALUE N"日本".',
+      '000060 01  E  PIC 1(4) VALUE B"1021".',
+      '000070 01  F  PIC N(1) VALUE NX"30A".'
+    ]);
+    assert.deepStrictEqual(got.filter((c) => c.endsWith('NC015')), ['2:NC015', '4:NC015', '6:NC015', '7:NC015']);
+  });
+  await test('NC016 header period, NC017 level number, NC018 reserved names', () => {
+    const got = codes([
+      '000010 DATA DIVISION',
+      '000020 WORKING-STORAGE SECTION.',
+      '000030 01  DATE           PIC X(8).',
+      '000040 55  WS-E           PIC X.',
+      '000050 88  OK-88          VALUES 1 2',
+      '000060                    55 60.',
+      '000070 01  PIC X.',
+      '000080 01  FILLER         PIC X.',
+      '000090 PROCEDURE DIVISION.',
+      '000100 MAIN SECTION',
+      '000110 SECTION.'
+    ]);
+    // line 11 "SECTION." in area A reads as a paragraph named with a reserved word
+    assert.deepStrictEqual(got.sort(), ['10:NC016', '1:NC016', '3:NC018', '4:NC017', '11:NC018'].sort());
+  });
+  await test('D lines are comments unless WITH DEBUGGING MODE', () => {
+    const body = ['000040 PROCEDURE DIVISION.', '000050D    DISPLAY "UNCLOSED'];
+    assert.deepStrictEqual(codes(body), []);
+    const withDebug = ['000010 ENVIRONMENT DIVISION.', '000020 CONFIGURATION SECTION.', '000030 SOURCE-COMPUTER. PC WITH DEBUGGING MODE.', ...body];
+    assert.ok(codes(withDebug).includes('5:NC007'), codes(withDebug).join(','));
+  });
+  await test('@OPTIONS SRF(VAR) removes the 72-column margin; SRF(FREE) turns checks off', () => {
+    const long = '000020     DISPLAY "' + 'A'.repeat(80) + '".';
+    assert.deepStrictEqual(codes(['000010 @OPTIONS SRF(VAR)', long]), []);
+    assert.ok(codes(['000010 @OPTIONS SRF(FIX)', long]).includes('2:NC003'));
+    assert.deepStrictEqual(codes(['@OPTIONS SRF(FREE)', 'MOVE 1 TO A.']), []);
+    assert.deepStrictEqual(parseStructure(['@OPTIONS SRF(FREE)', 'IDENTIFICATION DIVISION.'], 'shiftjis').roots, []);
+  });
+  await test('COPY REPLACING, names before replacing, qualification', () => {
+    const { parseReplacing, namesBeforeReplacing, qualify } = require('../out/core/structure');
+    assert.deepStrictEqual(parseReplacing(' K REPLACING ==:PRE:== BY ==WS== "A" BY "B" LEADING ==X-== BY ==Y-==.'), [
+      { from: ':PRE:', to: 'WS' }, { from: 'A', to: 'B' }, { from: 'X-', to: 'Y-' }
+    ]);
+    assert.deepStrictEqual(namesBeforeReplacing('WS-CNT', [{ from: ':PRE:', to: 'WS' }]), ['WS-CNT', ':PRE:-CNT']);
+    const s = parseStructure(
+      ['000010 01 A.', '000020    05 X PIC X.', '000030 01 B.', '000040    05 X PIC X.', '000050    COPY K REPLACING ==:P:==', '000060         BY ==WK==.'],
+      'shiftjis'
+    );
+    assert.deepStrictEqual(qualify(s.definitions.get('X'), ['B']).map((n) => n.startLine + 1), [4]);
+    assert.deepStrictEqual(qualify(s.definitions.get('X'), ['NOPE']).map((n) => n.startLine + 1), [2, 4]);
+    assert.deepStrictEqual(s.copies[0].replacing, [{ from: ':P:', to: 'WK' }]);
+  });
+
   console.log('grammar');
   const vsctm = require('vscode-textmate');
   const oniguruma = require('vscode-oniguruma');
@@ -331,6 +390,11 @@ const codesAt = (diags) => diags.map((d) => `${d.line + 1}:${d.code}`).sort();
     expectScope('D', 'keyword.other.debug-indicator');
     expectScope('WS-CNT', 'variable.other.host');
     expectScope('END-EXEC', 'keyword.control.exec');
+  });
+  await test('pseudo-text and known intrinsic functions', () => {
+    const t = tokenize(['000100     COPY K REPLACING ==:PRE:== BY ==WS==.', '000200     MOVE FUNCTION UPPER-CASE(A) TO B.']);
+    assert.ok(t.some((x) => x.text === ':PRE:' && x.scopes.includes('string.other.pseudo-text')));
+    assert.ok(t.some((x) => x.text === 'UPPER-CASE' && x.scopes.includes('support.function.builtin')));
   });
   await test('hyphenated names are not split into keywords', () => {
     const line = '000100     MOVE WS-MOVE-END TO END-X.';

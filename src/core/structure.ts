@@ -6,6 +6,8 @@
  * Pure TypeScript (no vscode import).
  */
 import { AREA_A_END, AREA_A_START, ColumnMode, IDENT_START, INDICATOR_COL, LineColumns } from './columns';
+import { FormatInfo, detectFormat } from './format';
+import { RESERVED_FOR_NAMES } from './keywords';
 import { effectiveLineCount } from './sequence';
 import { WORD, WORD_CHAR_RE } from './words';
 
@@ -30,6 +32,7 @@ export interface StructNode {
   endLine: number;
   nameSpan: Span;
   children: StructNode[];
+  parent?: StructNode;
 }
 
 export interface CopyRef {
@@ -37,6 +40,8 @@ export interface CopyRef {
   lib?: string;
   quoted: boolean;
   span: Span; // the name (without quotes)
+  /** COPY ... REPLACING pairs, operands normalised (pseudo-text delimiters removed, upper case) */
+  replacing?: { from: string; to: string }[];
 }
 
 export interface FoldRegion {
@@ -97,15 +102,15 @@ interface Line {
   firstCol: number;
 }
 
-function readLine(text: string, mode: ColumnMode): Line {
+function readLine(text: string, mode: ColumnMode, fmt: FormatInfo): Line {
   const lc = new LineColumns(text, mode);
   const base = { text, masked: '', content: '', contentStart: 0, firstCol: 0 };
   if (lc.totalWidth < INDICATOR_COL) return { ...base, kind: 'blank' };
   const ind = lc.cellAtCol(INDICATOR_COL)!;
   const ch = ind.col === INDICATOR_COL ? ind.ch : '';
-  if (ch === '*' || ch === '/') return { ...base, kind: 'comment' };
+  if (ch === '*' || ch === '/' || (!fmt.debugging && (ch === 'D' || ch === 'd'))) return { ...base, kind: 'comment' };
   const contentStart = lc.offsetAtCol(AREA_A_START);
-  const content = text.slice(contentStart, lc.offsetAtCol(IDENT_START));
+  const content = text.slice(contentStart, fmt.format === 'variable' ? text.length : lc.offsetAtCol(IDENT_START));
   const masked = mask(content);
   const first = content.search(/\S/);
   if (first < 0) return { ...base, kind: ch === '-' ? 'continuation' : 'blank', content, contentStart, masked };
@@ -158,9 +163,11 @@ function rankOf(kind: NodeKind, level?: number): number {
   return 4 + lv / 100;
 }
 
-export function parseStructure(allLines: readonly string[], mode: ColumnMode): Structure {
+export function parseStructure(allLines: readonly string[], mode: ColumnMode, fmtIn?: FormatInfo): Structure {
+  const fmt = fmtIn ?? detectFormat(allLines);
+  if (fmt.format === 'free') return { roots: [], copies: [], folds: [], definitions: new Map() };
   const n = effectiveLineCount(allLines);
-  const lines = allLines.slice(0, n).map((t) => readLine(t.replace(/\r$/, ''), mode));
+  const lines = allLines.slice(0, n).map((t) => readLine(t.replace(/\r$/, ''), mode, fmt));
   const roots: StructNode[] = [];
   const copies: CopyRef[] = [];
   const folds: FoldRegion[] = [];
@@ -188,6 +195,7 @@ export function parseStructure(allLines: readonly string[], mode: ColumnMode): S
   const open = (node: StructNode, rank: number) => {
     closeTo(rank, node.startLine);
     const parent = stack.length ? stack[stack.length - 1].node : undefined;
+    node.parent = parent;
     (parent ? parent.children : roots).push(node);
     stack.push({ node, rank });
     define(node);
@@ -235,7 +243,14 @@ export function parseStructure(allLines: readonly string[], mode: ColumnMode): S
       const nameStart = kw + 4 + (afterKw.length - afterKw.trimStart().length);
       const quoted = /^["']/.test(r[2]);
       const name = quoted ? r[2].slice(1, -1) : r[2];
-      copies.push({ name, lib: r[3], quoted, span: span(ln, line, nameStart + (quoted ? 1 : 0), name.length) });
+      const replacing = parseReplacing(statementText(lines, ln, kw));
+      copies.push({
+        name,
+        lib: r[3],
+        quoted,
+        span: span(ln, line, nameStart + (quoted ? 1 : 0), name.length),
+        ...(replacing.length ? { replacing } : {})
+      });
     }
 
     // EXEC SQL blocks: fold them, skip their contents
@@ -319,7 +334,7 @@ export function parseStructure(allLines: readonly string[], mode: ColumnMode): S
     if (division === 'PROCEDURE') {
       // ---- paragraphs (area A, "NAME.")
       const para = inAreaA ? PARAGRAPH_RE.exec(rest) : null;
-      if (para && !NOT_PARAGRAPH.has(para[1].toUpperCase())) {
+      if (para && !NOT_PARAGRAPH.has(para[1].toUpperCase()) && !RESERVED_FOR_NAMES.has(para[1].toUpperCase())) {
         open(node('paragraph', para[1], ln, span(ln, line, first, para[1].length), { key: para[1].toUpperCase() }), RANK.paragraph);
       }
     } else if (division === 'DATA' || division === undefined) {
@@ -344,7 +359,9 @@ export function parseStructure(allLines: readonly string[], mode: ColumnMode): S
         }
         const parent = stack.length ? stack[stack.length - 1].node : undefined;
         const label = `COPY ${ref.name}${ref.lib ? ` OF ${ref.lib}` : ''}`;
-        (parent ? parent.children : roots).push(node('copy', label, ln, ref.span));
+        const leaf = node('copy', label, ln, ref.span);
+        leaf.parent = parent;
+        (parent ? parent.children : roots).push(leaf);
       } else {
         // ---- data description entries
         const lv = LEVEL_RE.exec(rest);
@@ -399,6 +416,67 @@ function describe(rest: string, level: number): string | undefined {
 /** True when `offset` on line `ln` falls inside a COPY name. */
 export function copyAt(s: Structure, ln: number, offset: number): CopyRef | undefined {
   return s.copies.find((c) => c.span.line === ln && offset >= c.span.start && offset <= c.span.end);
+}
+
+/** Text of a statement from `content[from]` on line `ln` up to its separator period (max 30 lines). */
+function statementText(lines: Line[], ln: number, from: number): string {
+  let out = '';
+  for (let i = ln; i < lines.length && i < ln + 30; i++) {
+    const l = lines[i];
+    if (l.kind === 'comment') continue;
+    const piece = (i === ln ? l.content.slice(from) : l.content).replace(/\*>.*$/, '');
+    out += ' ' + piece;
+    // a period outside pseudo-text and literals ends the statement
+    const masked = out.replace(/==[\s\S]*?==/g, (m) => ' '.repeat(m.length)).replace(/"[^"]*"|'[^']*'/g, (m) => ' '.repeat(m.length));
+    if (/\.(\s|$)/.test(masked)) break;
+  }
+  return out;
+}
+
+const OPERAND = `(==[\\s\\S]*?==|"[^"]*"|'[^']*'|[^\\s.]+)`;
+const PAIR_RE = new RegExp(`(?:(?:LEADING|TRAILING)\\s+)?${OPERAND}\\s+BY\\s+${OPERAND}`, 'gi');
+
+/** REPLACING operand pairs of a COPY statement. */
+export function parseReplacing(stmt: string): { from: string; to: string }[] {
+  const at = stmt.search(/(^|\s)REPLACING(\s|$)/i);
+  if (at < 0) return [];
+  const body = stmt.slice(at).replace(/^\s*REPLACING/i, '');
+  const norm = (o: string) => o.replace(/^==|==$/g, '').replace(/^["']|["']$/g, '').trim().replace(/\s+/g, ' ').toUpperCase();
+  const pairs: { from: string; to: string }[] = [];
+  PAIR_RE.lastIndex = 0;
+  for (let m = PAIR_RE.exec(body); m; m = PAIR_RE.exec(body)) pairs.push({ from: norm(m[1]), to: norm(m[2]) });
+  return pairs;
+}
+
+/**
+ * Names to look for inside a copybook so that `key` (as written in the including source)
+ * is found after REPLACING: for each pair, undo the replacement.
+ */
+export function namesBeforeReplacing(key: string, replacing: { from: string; to: string }[] | undefined): string[] {
+  const out = [key];
+  for (const { from, to } of replacing ?? []) {
+    if (to && key.includes(to)) out.push(key.replace(to, from));
+    else if (!to && from) out.push(from + key); // REPLACING ==X-== BY ==== (prefix removed)
+  }
+  return [...new Set(out)];
+}
+
+/**
+ * Keep the definitions that satisfy a qualification "A OF B OF C": each qualifier must be
+ * an ancestor, in order. Returns all definitions when none qualifies.
+ */
+export function qualify(defs: StructNode[], qualifiers: string[]): StructNode[] {
+  if (qualifiers.length === 0) return defs;
+  const ok = defs.filter((d) => {
+    let p = d.parent;
+    for (const q of qualifiers) {
+      while (p && p.key !== q) p = p.parent;
+      if (!p) return false;
+      p = p.parent;
+    }
+    return true;
+  });
+  return ok.length ? ok : defs;
 }
 
 export { WORD_CHAR_RE };

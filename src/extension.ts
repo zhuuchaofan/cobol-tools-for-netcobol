@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ColumnMode, INDICATOR_COL, LineColumns, fixedAreaRanges } from './core/columns';
 import { RawDiagnostic, RuleCode, analyze } from './core/diagnostics';
+import { FormatSetting, detectFormat, isDebugLine } from './core/format';
 import { SEQ_MAX, formatSeq, numberAfterPrevious, renumber } from './core/sequence';
 import { registerLanguageFeatures } from './features';
 
@@ -9,12 +10,15 @@ const DEBOUNCE_MS = 250;
 
 let collection: vscode.DiagnosticCollection;
 let dimDecoration: vscode.TextEditorDecorationType;
+let inactiveDebugDecoration: vscode.TextEditorDecorationType;
 const timers = new Map<string, NodeJS.Timeout>();
 
 export function activate(context: vscode.ExtensionContext): void {
   collection = vscode.languages.createDiagnosticCollection(LANG);
   dimDecoration = vscode.window.createTextEditorDecorationType({ opacity: '0.45' });
-  context.subscriptions.push(collection, dimDecoration);
+  // 'D' lines without WITH DEBUGGING MODE are comments for the compiler
+  inactiveDebugDecoration = vscode.window.createTextEditorDecorationType({ opacity: '0.45', fontStyle: 'italic' });
+  context.subscriptions.push(collection, dimDecoration, inactiveDebugDecoration);
 
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument((d) => refresh(d)),
@@ -55,7 +59,8 @@ function settings(doc: vscode.TextDocument) {
     disabledRules: cfg.get<string[]>('diagnostics.disabledRules', []),
     dim: cfg.get<boolean>('dimFixedAreas', true),
     seqStart: cfg.get<number>('sequence.start', 10),
-    seqStep: Math.max(1, cfg.get<number>('sequence.step', 10))
+    seqStep: Math.max(1, cfg.get<number>('sequence.step', 10)),
+    format: cfg.get<FormatSetting>('sourceFormat', 'auto')
   };
 }
 
@@ -89,7 +94,7 @@ function refresh(doc: vscode.TextDocument): void {
   } else {
     const lines: string[] = [];
     for (let i = 0; i < doc.lineCount; i++) lines.push(doc.lineAt(i).text);
-    const raw = analyze(lines, { mode: s.mode, maxLineLength: s.maxLineLength, disabledRules: s.disabledRules });
+    const raw = analyze(lines, { mode: s.mode, maxLineLength: s.maxLineLength, disabledRules: s.disabledRules, format: s.format });
     collection.set(doc.uri, raw.map(toDiagnostic));
   }
   vscode.window.visibleTextEditors.filter((e) => e.document === doc).forEach(decorate);
@@ -141,6 +146,23 @@ function message(code: RuleCode, a: string[]): string {
       return vscode.l10n.t('Sequence area "{0}" is not a 6-digit number.', a[0]);
     case 'NC014':
       return vscode.l10n.t('Sequence number {0} is not greater than the previous number {1}.', a[0], a[1]);
+    case 'NC015':
+      switch (a[0]) {
+        case 'X':
+          return vscode.l10n.t('Hexadecimal literal X"..." must consist of pairs of hexadecimal digits (0-9, A-F).');
+        case 'NX':
+          return vscode.l10n.t('National hexadecimal literal NX"..." must consist of hexadecimal digits in groups of four.');
+        case 'B':
+          return vscode.l10n.t('Boolean literal B"..." may contain only 0 and 1.');
+        default:
+          return vscode.l10n.t('National literal N"..." / NC"..." may contain only full-width characters.');
+      }
+    case 'NC016':
+      return vscode.l10n.t('Header "{0}" must be followed by a separator period.', a[0]);
+    case 'NC017':
+      return vscode.l10n.t('Level number {0} is not valid (01-49, 66, 77, 88).', a[0]);
+    case 'NC018':
+      return vscode.l10n.t('"{0}" is a reserved word and cannot be used as a user-defined name.', a[0]);
   }
 }
 
@@ -151,17 +173,25 @@ function decorate(editor: vscode.TextEditor): void {
   const s = settings(doc);
   if (!s.dim) {
     editor.setDecorations(dimDecoration, []);
+    editor.setDecorations(inactiveDebugDecoration, []);
     return;
   }
+  const lines: string[] = [];
+  for (let i = 0; i < doc.lineCount; i++) lines.push(doc.lineAt(i).text);
+  const fmt = detectFormat(lines, s.format);
   const ranges: vscode.Range[] = [];
-  for (let i = 0; i < doc.lineCount; i++) {
-    const text = doc.lineAt(i).text;
-    if (!text) continue;
-    const { sequenceEnd, identStart } = fixedAreaRanges(text, s.mode);
-    if (sequenceEnd > 0) ranges.push(new vscode.Range(i, 0, i, sequenceEnd));
-    if (identStart < text.length) ranges.push(new vscode.Range(i, identStart, i, text.length));
+  const debugRanges: vscode.Range[] = [];
+  if (fmt.format !== 'free') {
+    lines.forEach((text, i) => {
+      if (!text) return;
+      const { sequenceEnd, identStart } = fixedAreaRanges(text, s.mode);
+      if (sequenceEnd > 0) ranges.push(new vscode.Range(i, 0, i, sequenceEnd));
+      if (fmt.format === 'fixed' && identStart < text.length) ranges.push(new vscode.Range(i, identStart, i, text.length));
+      if (!fmt.debugging && isDebugLine(text)) debugRanges.push(new vscode.Range(i, sequenceEnd, i, text.length));
+    });
   }
   editor.setDecorations(dimDecoration, ranges);
+  editor.setDecorations(inactiveDebugDecoration, debugRanges);
 }
 
 // ------------------------------------------------------------------ comment toggle (column 7)
@@ -225,6 +255,10 @@ function renumberSequence(editor: vscode.TextEditor, edit: vscode.TextEditorEdit
   const s = settings(doc);
   const lines: string[] = [];
   for (let i = 0; i < doc.lineCount; i++) lines.push(doc.lineAt(i).text);
+  if (detectFormat(lines, s.format).format === 'free') {
+    vscode.window.showWarningMessage(vscode.l10n.t('This source is in free format (SRF(FREE)) and has no sequence area.'));
+    return;
+  }
 
   const whole = args.some((a) => !!a && typeof a === 'object' && (a as { whole?: boolean }).whole === true);
   const blocks: [number, number][] = [];

@@ -18,5 +18,13 @@
   "Sequence numbers would exceed {0}. Use a smaller start or step (netcobol.sequence.start / netcobol.sequence.step).": "一連番号が {0} を超えます。開始番号または増分を小さくしてください（netcobol.sequence.start / netcobol.sequence.step）。",
   "Sequence area is already in order.": "一連番号は整っています。",
   "Renumbered {0} lines ({1}-{2}).": "{0}行の一連番号を振り直しました（{1}〜{2}）。",
-  "{0} line(s) skipped because a full-width character straddles columns 6 and 7: line {1}": "6〜7桁目に全角文字がまたがっているため、{0}行をスキップしました：{1}行目"
+  "{0} line(s) skipped because a full-width character straddles columns 6 and 7: line {1}": "6〜7桁目に全角文字がまたがっているため、{0}行をスキップしました：{1}行目",
+  "Hexadecimal literal X\"...\" must consist of pairs of hexadecimal digits (0-9, A-F).": "16進文字定数 X\"…\" は 0〜9・A〜F を2桁ずつ（偶数個）で記述してください。",
+  "National hexadecimal literal NX\"...\" must consist of hexadecimal digits in groups of four.": "日本語16進定数 NX\"…\" は16進数字を4桁ずつで記述してください。",
+  "Boolean literal B\"...\" may contain only 0 and 1.": "ブール定数 B\"…\" には 0 と 1 しか書けません。",
+  "National literal N\"...\" / NC\"...\" may contain only full-width characters.": "日本語定数 N\"…\" / NC\"…\" には全角文字しか書けません。",
+  "Header \"{0}\" must be followed by a separator period.": "見出し「{0}」の後には終止符（.）が必要です。",
+  "Level number {0} is not valid (01-49, 66, 77, 88).": "レベル番号 {0} は使えません（01〜49、66、77、88）。",
+  "\"{0}\" is a reserved word and cannot be used as a user-defined name.": "「{0}」は予約語のため、利用者語として使えません。",
+  "This source is in free format (SRF(FREE)) and has no sequence area.": "自由形式（SRF(FREE)）のソースには一連番号領域がありません。"
 }

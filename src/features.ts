@@ -5,15 +5,17 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { ColumnMode } from './core/columns';
 import { DEFAULT_COPY_EXTENSIONS, matchDir, matchEntry } from './core/copybook';
-import { CopyRef, Span, StructNode, Structure, copyAt, parseStructure } from './core/structure';
-import { WORD_RE } from './core/words';
+import { FormatSetting, detectFormat } from './core/format';
+import { CopyRef, Span, StructNode, Structure, copyAt, namesBeforeReplacing, parseStructure, qualify } from './core/structure';
+import { WORD, WORD_RE } from './core/words';
 
 const LANG = 'netcobol';
 const MAX_COPY_DEPTH = 3;
 const LISTING_TTL_MS = 3000;
+const QUALIFIER_RE = new RegExp(`^\\s+(?:OF|IN)\\s+(${WORD})`, 'i');
 
 // ------------------------------------------------------------------ structure cache
-const cache = new Map<string, { version: number; mode: ColumnMode; s: Structure }>();
+const cache = new Map<string, { version: number; mode: ColumnMode; format: FormatSetting; s: Structure }>();
 
 function modeOf(doc: vscode.TextDocument): ColumnMode {
   return vscode.workspace.getConfiguration('netcobol', doc.uri).get<ColumnMode>('columnCounting', 'shiftjis');
@@ -22,12 +24,13 @@ function modeOf(doc: vscode.TextDocument): ColumnMode {
 export function structureOf(doc: vscode.TextDocument): Structure {
   const key = doc.uri.toString();
   const mode = modeOf(doc);
+  const format = vscode.workspace.getConfiguration('netcobol', doc.uri).get<FormatSetting>('sourceFormat', 'auto');
   const hit = cache.get(key);
-  if (hit && hit.version === doc.version && hit.mode === mode) return hit.s;
+  if (hit && hit.version === doc.version && hit.mode === mode && hit.format === format) return hit.s;
   const lines: string[] = [];
   for (let i = 0; i < doc.lineCount; i++) lines.push(doc.lineAt(i).text);
-  const s = parseStructure(lines, mode);
-  cache.set(key, { version: doc.version, mode, s });
+  const s = parseStructure(lines, mode, detectFormat(lines, format));
+  cache.set(key, { version: doc.version, mode, format, s });
   return s;
 }
 
@@ -154,14 +157,24 @@ class DefinitionProvider implements vscode.DefinitionProvider {
     if (!wordRange) return undefined;
     const key = doc.getText(wordRange).toUpperCase();
 
+    // qualification: WORD OF/IN GROUP [OF/IN ...]
+    const qualifiers: string[] = [];
+    let after = doc.lineAt(pos.line).text.slice(wordRange.end.character);
+    for (let m = QUALIFIER_RE.exec(after); m; m = QUALIFIER_RE.exec(after)) {
+      qualifiers.push(m[1].toUpperCase());
+      after = after.slice(m[0].length);
+    }
+
     const local = s.definitions.get(key);
-    if (local?.length) return local.map((n) => new vscode.Location(doc.uri, toRange(n.nameSpan)));
+    if (local?.length) return qualify(local, qualifiers).map((n) => new vscode.Location(doc.uri, toRange(n.nameSpan)));
 
     // not defined here: look through the copybooks this source includes
     const found: vscode.Location[] = [];
     const visited = new Set<string>([doc.uri.toString()]);
-    const walk = async (d: vscode.TextDocument, st: Structure, depth: number): Promise<void> => {
+    const walk = async (d: vscode.TextDocument, st: Structure, depth: number, keys?: string[]): Promise<void> => {
       for (const ref of st.copies) {
+        // names as they appear inside the copybook, undoing COPY ... REPLACING
+        const names = keys ?? namesBeforeReplacing(key, ref.replacing);
         if (token.isCancellationRequested) return;
         const uri = await resolveCopy(d, ref);
         if (!uri || visited.has(uri.toString())) continue;
@@ -173,8 +186,10 @@ class DefinitionProvider implements vscode.DefinitionProvider {
           continue;
         }
         const cs = structureOf(cd);
-        for (const n of cs.definitions.get(key) ?? []) found.push(new vscode.Location(uri, toRange(n.nameSpan)));
-        if (depth + 1 < MAX_COPY_DEPTH) await walk(cd, cs, depth + 1);
+        for (const name of names) {
+          for (const n of cs.definitions.get(name) ?? []) found.push(new vscode.Location(uri, toRange(n.nameSpan)));
+        }
+        if (depth + 1 < MAX_COPY_DEPTH) await walk(cd, cs, depth + 1, names);
       }
     };
     await walk(doc, s, 0);

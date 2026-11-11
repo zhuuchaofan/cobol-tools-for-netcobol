@@ -40,8 +40,16 @@ Columns are counted in **Shift_JIS bytes (full-width = 2 columns)**, so lines co
 | NC012 | Info | Sequence area is blank (consecutive lines reported once) |
 | NC013 | Info | Sequence area is not a 6-digit number |
 | NC014 | Info | Sequence number is not greater than the previous one |
+| NC015 | Error | Invalid literal content (`X"…"` hex digit pairs, `NX"…"` groups of four, `B"…"` only 0/1, `N"…"`/`NC"…"` full-width only) |
+| NC016 | Warning | Division / section header without a separator period |
+| NC017 | Warning | Invalid level number (not 01-49, 66, 77, 88) |
+| NC018 | Error | Reserved word used as a data, paragraph or file name |
 
 Messages follow the VS Code display language (Japanese / English / Simplified Chinese).
+
+- Debugging lines (`D` in column 7) are treated as comments, shown dimmed and italic, unless `SOURCE-COMPUTER` has `WITH DEBUGGING MODE`
+- `@OPTIONS SRF(VAR)` switches to variable format (no column-72 margin); `SRF(FREE)` turns column checks off (or set `netcobol.sourceFormat`)
+- The reserved word and intrinsic function lists are based on the COBOL 85 standard plus common NetCOBOL extensions; they are still to be checked against the COBOL文法書
 
 ### Renumber sequence area
 - Editor context menu, or Command Palette: "NetCOBOL: Renumber Sequence Area (columns 1-6)"
@@ -53,7 +61,7 @@ Messages follow the VS Code display language (Japanese / English / Simplified Ch
 ### Outline, folding, go to definition
 - **Outline** (Outline view, `Ctrl+Shift+O`, breadcrumbs): program → divisions → sections → paragraphs; the data division as FD → 01 → 05 … → 88 with `PIC` shown
 - **Folding**: divisions, sections, paragraphs, group items, runs of comment lines, `EXEC SQL` blocks
-- **Go to definition** (`F12` / `Ctrl+Click`): paragraphs, sections, data names, file names; when not found in the file, the copybooks it `COPY`s are searched too (up to 3 levels)
+- **Go to definition** (`F12` / `Ctrl+Click`): paragraphs, sections, data names, file names; when not found in the file, the copybooks it `COPY`s are searched too (up to 3 levels). Qualification (`A OF B`) and `COPY … REPLACING ==:PRE:== BY ==WS==` are taken into account
 - **COPY**: `F12` / `Ctrl+Click` on the copybook name opens it
   - Search order: the folder of the current file, then `netcobol.copybook.paths`
   - Extensions tried: none, `.cbl`, `.cob`, `.cpy`, `.cobol` (case-insensitive)
@@ -95,6 +103,7 @@ File extensions: `.cob` `.cbl` `.cobol` `.cpy` `.pco`
 | Setting | Default | Description |
 |---|---|---|
 | `netcobol.columnCounting` | `shiftjis` | Column counting: `shiftjis` / `utf8` / `character` |
+| `netcobol.sourceFormat` | `auto` | Reference format: `auto` (from `@OPTIONS SRF`) / `fixed` / `variable` / `free` |
 | `netcobol.diagnostics.enabled` | `true` | Enable format checks |
 | `netcobol.diagnostics.maxLineLength` | `80` | Maximum line length (0 = off) |
 | `netcobol.diagnostics.disabledRules` | `[]` | Rules to turn off, e.g. `["NC010", "NC012"]` |
@@ -107,10 +116,10 @@ File extensions: `.cob` `.cbl` `.cobol` `.cpy` `.pco`
 For UTF-8 sources set `files.encoding` to `utf8` and `netcobol.columnCounting` to `utf8`.
 
 ## Limitations
-- Fixed format only; variable and free format sources get wrong column checks (diagnostics can be turned off)
+- Fixed and variable format are supported; free format gets highlighting only (no column checks, no outline)
 - Shift_JIS width is "ASCII and half-width katakana = 1, everything else = 2"
 - Paragraph names written in area B are not checked (indistinguishable from multi-line statements)
-- Outline and go to definition use a simple line-based parser; `COPY … REPLACING` and qualified names (`OF` / `IN`) are not taken into account
+- Outline and go to definition use a simple line-based parser; the `REPLACE` statement is not taken into account
 
 ## Feedback and contributing
 Report bugs and ideas in [Issues](https://github.com/zhuuchaofan/cobol-tools-for-netcobol/issues) (Japanese, English or Chinese).

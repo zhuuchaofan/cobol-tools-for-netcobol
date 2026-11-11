@@ -22,7 +22,8 @@ VS Code でこのフォルダーを開いて `F5` を押すと、拡張機能を
 
 | パス | 内容 |
 |---|---|
-| `scripts/build-grammar.js` | キーワード一覧と TextMate 文法の生成元。**`syntaxes/*.json` は直接編集せず、こちらを編集**して `npm run build:grammar` |
+| `src/core/keywords.ts` | 予約語・組込み関数などの一覧（ハイライトとチェックの共通データ） |
+| `scripts/build-grammar.js` | TextMate 文法の生成元。**`syntaxes/*.json` は直接編集せず**、こちらか `keywords.ts` を編集して `npm run compile` |
 | `src/core/columns.ts` | 桁計算（Shift_JIS / UTF-8 / 文字数） |
 | `src/core/diagnostics.ts` | 書式チェック NC001〜NC011 |
 | `src/core/sequence.ts` | 一連番号チェック NC012〜NC014 と振り直し |

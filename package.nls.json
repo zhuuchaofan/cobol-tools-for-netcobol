@@ -13,5 +13,10 @@
   "cfg.sequence.start": "First number used when renumbering the sequence area (columns 1-6).",
   "cfg.sequence.step": "Increment used when renumbering the sequence area.",
   "cfg.copybook.paths": "Folders searched for copybooks (`COPY name`) after the folder of the current file. Relative paths are resolved from the workspace folder; `${workspaceFolder}` is supported. `COPY name OF lib` also looks in a sub-folder named `lib`.",
-  "cfg.copybook.extensions": "File extensions tried for a copybook name, in order (matched case-insensitively). \"\" means the name as written."
+  "cfg.copybook.extensions": "File extensions tried for a copybook name, in order (matched case-insensitively). \"\" means the name as written.",
+  "cfg.sourceFormat": "Source reference format (NetCOBOL compiler option SRF).",
+  "cfg.sourceFormat.auto": "Read @OPTIONS SRF(...) in the source; fixed format when absent.",
+  "cfg.sourceFormat.fixed": "Fixed format: columns 73-80 are the identification area.",
+  "cfg.sourceFormat.variable": "Variable format: no right margin after column 72.",
+  "cfg.sourceFormat.free": "Free format: column checks, dimming and renumbering are off."
 }

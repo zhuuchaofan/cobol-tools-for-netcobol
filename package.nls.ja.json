@@ -13,5 +13,10 @@
   "cfg.sequence.start": "一連番号を振り直すときの開始番号。",
   "cfg.sequence.step": "一連番号を振り直すときの増分。",
   "cfg.copybook.paths": "登録集原文（`COPY 名前`）を探すフォルダー。編集中のファイルと同じフォルダーの次に検索します。相対パスはワークスペースフォルダー基準、`${workspaceFolder}` も使えます。`COPY 名前 OF ライブラリ` の場合は `ライブラリ` という名前のサブフォルダーも探します。",
-  "cfg.copybook.extensions": "登録集原文の名前に付けて試す拡張子（順番どおり、大文字小文字は区別しない）。\"\" は名前そのまま。"
+  "cfg.copybook.extensions": "登録集原文の名前に付けて試す拡張子（順番どおり、大文字小文字は区別しない）。\"\" は名前そのまま。",
+  "cfg.sourceFormat": "正書法の形式（NetCOBOL の翻訳オプション SRF）。",
+  "cfg.sourceFormat.auto": "ソース中の @OPTIONS SRF(...) から判定。なければ固定形式。",
+  "cfg.sourceFormat.fixed": "固定形式：73〜80桁はプログラム識別領域。",
+  "cfg.sourceFormat.variable": "可変形式：72桁の右端制限なし。",
+  "cfg.sourceFormat.free": "自由形式：桁チェック・薄色表示・一連番号の振り直しを行わない。"
 }

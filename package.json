@@ -2,7 +2,7 @@
   "name": "cobol-tools-for-netcobol",
   "displayName": "COBOL Tools for NetCOBOL",
   "description": "%ext.description%",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "zhuuchaofan",
   "author": {
     "name": "zhuuchaofan"
@@ -112,6 +112,24 @@
           "scope": "resource",
           "description": "%cfg.columnCounting%"
         },
+        "netcobol.sourceFormat": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "fixed",
+            "variable",
+            "free"
+          ],
+          "enumDescriptions": [
+            "%cfg.sourceFormat.auto%",
+            "%cfg.sourceFormat.fixed%",
+            "%cfg.sourceFormat.variable%",
+            "%cfg.sourceFormat.free%"
+          ],
+          "default": "auto",
+          "scope": "resource",
+          "description": "%cfg.sourceFormat%"
+        },
         "netcobol.diagnostics.enabled": {
           "type": "boolean",
           "default": true,
@@ -143,7 +161,11 @@
               "NC011",
               "NC012",
               "NC013",
-              "NC014"
+              "NC014",
+              "NC015",
+              "NC016",
+              "NC017",
+              "NC018"
             ]
           },
           "default": [],
@@ -238,7 +260,7 @@
   },
   "scripts": {
     "build:grammar": "node scripts/build-grammar.js",
-    "compile": "npm run build:grammar && tsc -p ./",
+    "compile": "tsc -p ./ && node scripts/build-grammar.js",
     "watch": "tsc -watch -p ./",
     "test": "npm run compile && node test/run-tests.js",
     "package": "npm run test && node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && vsce package --out dist/",
