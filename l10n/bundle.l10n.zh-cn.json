@@ -1,0 +1,22 @@
+{
+  "Invalid character \"{0}\" in the indicator area (column 7). Use space, *, /, - or D.": "指示区（第7列）的字符“{0}”无效。只能是空格、*、/、- 或 D。",
+  "Full-width character \"{0}\" straddles columns {1} and {2}.": "全角字符“{0}”跨在第{1}列和第{2}列之间。",
+  "Text continues past column 72. Columns 73 and later are the identification area and are ignored by the compiler.": "内容超出了第72列。第73列以后是标识区，编译器会忽略。",
+  "Line is {1} columns long (limit {0}).": "该行有 {1} 列（上限 {0} 列）。",
+  "\"{0}\" must start in area A (columns 8-11).": "“{0}”必须从 A 区（第8-11列）开始写。",
+  "Statement \"{0}\" starts in area A. Procedure statements belong in area B (column 12 or later).": "语句“{0}”从 A 区开始。过程语句应写在 B 区（第12列以后）。",
+  "Literal is not closed before column 72 and the next line is not a continuation line (\"-\" in column 7).": "字符常量在第72列前没有闭合，且下一行不是继续行（第7列不是“-”）。",
+  "A continued literal must resume with a quotation mark ({0}) in area B.": "被继续的字符常量必须在 B 区以引号（{0}）重新开始。",
+  "Full-width space (U+3000) outside a literal or comment.": "常量/注释以外的位置有全角空格。",
+  "Tab character: column positions may not match what the compiler sees.": "存在 Tab 字符，列位置可能与编译器识别的不一致。",
+  "Area A (columns 8-11) of a continuation line must be blank.": "继续行的 A 区（第8-11列）必须为空白。",
+  "Sequence area (columns 1-6) is blank.": "序号区（第1-6列）为空。",
+  "Sequence area (columns 1-6) is blank on {0} lines (lines {1}-{2}).": "有 {0} 行序号区（第1-6列）为空（第{1}-{2}行）。",
+  "Sequence area \"{0}\" is not a 6-digit number.": "序号区“{0}”不是6位数字。",
+  "Sequence number {0} is not greater than the previous number {1}.": "序号 {0} 不大于上一行的 {1}。",
+  "Renumber the sequence area of the whole file": "整个文件的序号区重新编号",
+  "Sequence numbers would exceed {0}. Use a smaller start or step (netcobol.sequence.start / netcobol.sequence.step).": "序号会超过 {0}。请调小起始值或步长（netcobol.sequence.start / netcobol.sequence.step）。",
+  "Sequence area is already in order.": "序号区已经是整齐的。",
+  "Renumbered {0} lines ({1}-{2}).": "已重新编号 {0} 行（{1}-{2}）。",
+  "{0} line(s) skipped because a full-width character straddles columns 6 and 7: line {1}": "有 {0} 行因全角字符跨在第6、7列而跳过：第 {1} 行"
+}

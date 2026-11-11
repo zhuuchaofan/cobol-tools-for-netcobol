@@ -1,0 +1,207 @@
+{
+  "name": "netcobol-support",
+  "displayName": "NetCOBOL Support",
+  "description": "%ext.description%",
+  "version": "0.2.0",
+  "publisher": "local",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "keywords": [
+    "NetCOBOL",
+    "COBOL",
+    "Shift_JIS",
+    "固定形式"
+  ],
+  "main": "./out/extension.js",
+  "l10n": "./l10n",
+  "activationEvents": [],
+  "contributes": {
+    "languages": [
+      {
+        "id": "netcobol",
+        "aliases": [
+          "NetCOBOL",
+          "netcobol"
+        ],
+        "extensions": [
+          ".cob",
+          ".cbl",
+          ".cobol",
+          ".cpy",
+          ".pco"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "netcobol",
+        "scopeName": "source.netcobol",
+        "path": "./syntaxes/netcobol.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.sql.netcobol": "sql"
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "netcobol.toggleLineComment",
+        "title": "%cmd.toggleLineComment%",
+        "category": "NetCOBOL"
+      },
+      {
+        "command": "netcobol.renumberSequence",
+        "title": "%cmd.renumberSequence%",
+        "category": "NetCOBOL"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "netcobol.toggleLineComment",
+        "key": "ctrl+/",
+        "mac": "cmd+/",
+        "when": "editorTextFocus && !editorReadonly && editorLangId == netcobol"
+      }
+    ],
+    "configuration": {
+      "title": "NetCOBOL",
+      "properties": {
+        "netcobol.columnCounting": {
+          "type": "string",
+          "enum": [
+            "shiftjis",
+            "utf8",
+            "character"
+          ],
+          "enumDescriptions": [
+            "%cfg.columnCounting.shiftjis%",
+            "%cfg.columnCounting.utf8%",
+            "%cfg.columnCounting.character%"
+          ],
+          "default": "shiftjis",
+          "scope": "resource",
+          "description": "%cfg.columnCounting%"
+        },
+        "netcobol.diagnostics.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "%cfg.diagnostics.enabled%"
+        },
+        "netcobol.diagnostics.maxLineLength": {
+          "type": "number",
+          "default": 80,
+          "minimum": 0,
+          "scope": "resource",
+          "description": "%cfg.diagnostics.maxLineLength%"
+        },
+        "netcobol.diagnostics.disabledRules": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "NC001",
+              "NC002",
+              "NC003",
+              "NC004",
+              "NC005",
+              "NC006",
+              "NC007",
+              "NC008",
+              "NC009",
+              "NC010",
+              "NC011",
+              "NC012",
+              "NC013",
+              "NC014"
+            ]
+          },
+          "default": [],
+          "scope": "resource",
+          "description": "%cfg.diagnostics.disabledRules%"
+        },
+        "netcobol.dimFixedAreas": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "%cfg.dimFixedAreas%"
+        },
+        "netcobol.sequence.start": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 0,
+          "maximum": 999999,
+          "scope": "resource",
+          "description": "%cfg.sequence.start%"
+        },
+        "netcobol.sequence.step": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 999999,
+          "scope": "resource",
+          "description": "%cfg.sequence.step%"
+        }
+      }
+    },
+    "configurationDefaults": {
+      "[netcobol]": {
+        "files.encoding": "shiftjis",
+        "files.autoGuessEncoding": false,
+        "editor.rulers": [
+          6,
+          7,
+          11,
+          72
+        ],
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false,
+        "editor.tabSize": 4,
+        "editor.wordWrap": "off",
+        "editor.trimAutoWhitespace": false,
+        "files.trimTrailingWhitespace": false
+      }
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "netcobol.renumberSequence",
+          "when": "editorLangId == netcobol && !editorReadonly",
+          "group": "1_modification@90"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "netcobol.renumberSequence",
+          "when": "editorLangId == netcobol"
+        },
+        {
+          "command": "netcobol.toggleLineComment",
+          "when": "editorLangId == netcobol"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build:grammar": "node scripts/build-grammar.js",
+    "compile": "npm run build:grammar && tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node test/run-tests.js",
+    "package": "npm run test && node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && vsce package --allow-missing-repository --out dist/netcobol-support-0.2.0.vsix",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.130",
+    "@types/vscode": "1.75.0",
+    "@vscode/vsce": "^4.1.0",
+    "typescript": "5.6",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
+  }
+}

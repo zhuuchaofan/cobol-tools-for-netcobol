@@ -1,0 +1,22 @@
+{
+  "Invalid character \"{0}\" in the indicator area (column 7). Use space, *, /, - or D.": "標識領域（7桁目）の文字「{0}」は無効です。空白・*・/・-・D のいずれかを指定してください。",
+  "Full-width character \"{0}\" straddles columns {1} and {2}.": "全角文字「{0}」が{1}桁目と{2}桁目にまたがっています。",
+  "Text continues past column 72. Columns 73 and later are the identification area and are ignored by the compiler.": "72桁目を越えて記述が続いています。73桁目以降はプログラム識別領域のため、コンパイラに無視されます。",
+  "Line is {1} columns long (limit {0}).": "1行が{1}桁あります（上限 {0} 桁）。",
+  "\"{0}\" must start in area A (columns 8-11).": "「{0}」はA領域（8〜11桁目）から書き始める必要があります。",
+  "Statement \"{0}\" starts in area A. Procedure statements belong in area B (column 12 or later).": "文「{0}」がA領域から始まっています。手続き文はB領域（12桁目以降）に記述してください。",
+  "Literal is not closed before column 72 and the next line is not a continuation line (\"-\" in column 7).": "文字定数が72桁目までに閉じておらず、次の行も継続行（7桁目が「-」）ではありません。",
+  "A continued literal must resume with a quotation mark ({0}) in area B.": "継続された文字定数は、B領域で引用符（{0}）から再開する必要があります。",
+  "Full-width space (U+3000) outside a literal or comment.": "定数・注記以外の場所に全角スペースがあります。",
+  "Tab character: column positions may not match what the compiler sees.": "タブ文字があります。コンパイラが認識する桁位置とずれる可能性があります。",
+  "Area A (columns 8-11) of a continuation line must be blank.": "継続行のA領域（8〜11桁目）は空白にしてください。",
+  "Sequence area (columns 1-6) is blank.": "一連番号領域（1〜6桁）が空白です。",
+  "Sequence area (columns 1-6) is blank on {0} lines (lines {1}-{2}).": "一連番号領域（1〜6桁）が空白の行が{0}行あります（{1}〜{2}行目）。",
+  "Sequence area \"{0}\" is not a 6-digit number.": "一連番号「{0}」が6桁の数字ではありません。",
+  "Sequence number {0} is not greater than the previous number {1}.": "一連番号 {0} が前の番号 {1} より大きくありません。",
+  "Renumber the sequence area of the whole file": "ファイル全体の一連番号を振り直す",
+  "Sequence numbers would exceed {0}. Use a smaller start or step (netcobol.sequence.start / netcobol.sequence.step).": "一連番号が {0} を超えます。開始番号または増分を小さくしてください（netcobol.sequence.start / netcobol.sequence.step）。",
+  "Sequence area is already in order.": "一連番号は整っています。",
+  "Renumbered {0} lines ({1}-{2}).": "{0}行の一連番号を振り直しました（{1}〜{2}）。",
+  "{0} line(s) skipped because a full-width character straddles columns 6 and 7: line {1}": "6〜7桁目に全角文字がまたがっているため、{0}行をスキップしました：{1}行目"
+}

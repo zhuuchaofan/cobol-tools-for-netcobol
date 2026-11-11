@@ -1,0 +1,15 @@
+{
+  "ext.description": "NetCOBOL（固定形式）语法高亮与列位置/格式诊断，按 Shift_JIS 字节数计算列。",
+  "cmd.toggleLineComment": "切换注释行（第7列 '*'）",
+  "cfg.columnCounting": "固定形式的列计算方式（序号区 1-6、指示区 7、A区 8-11、B区 12-72、标识区 73-80）。",
+  "cfg.columnCounting.shiftjis": "Shift_JIS 字节：全角算 2 列，ASCII 与半角片假名算 1 列（与 Shift_JIS 源码下的 NetCOBOL 一致）。",
+  "cfg.columnCounting.utf8": "UTF-8 字节：适用于以 UTF-8 编译的源码。",
+  "cfg.columnCounting.character": "每个字符算 1 列。",
+  "cfg.diagnostics.enabled": "启用 NetCOBOL 格式诊断。",
+  "cfg.diagnostics.maxLineLength": "行超过该列数时警告（0 为关闭）。",
+  "cfg.diagnostics.disabledRules": "要关闭的规则代码，例如 [\"NC010\"]。",
+  "cfg.dimFixedAreas": "淡化显示序号区（1-6 列）与标识区（73-80 列）。",
+  "cmd.renumberSequence": "序号区（第1-6列）重新编号",
+  "cfg.sequence.start": "序号区重新编号时的起始值。",
+  "cfg.sequence.step": "序号区重新编号时的步长。"
+}
