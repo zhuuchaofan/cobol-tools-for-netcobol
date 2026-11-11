@@ -171,6 +171,30 @@
           "maximum": 999999,
           "scope": "resource",
           "description": "%cfg.sequence.step%"
+        },
+        "netcobol.copybook.paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "scope": "resource",
+          "markdownDescription": "%cfg.copybook.paths%"
+        },
+        "netcobol.copybook.extensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "",
+            ".cbl",
+            ".cob",
+            ".cpy",
+            ".cobol"
+          ],
+          "scope": "resource",
+          "description": "%cfg.copybook.extensions%"
         }
       }
     },

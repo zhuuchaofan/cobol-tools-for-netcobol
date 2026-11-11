@@ -26,6 +26,9 @@ VS Code でこのフォルダーを開いて `F5` を押すと、拡張機能を
 | `src/core/columns.ts` | 桁計算（Shift_JIS / UTF-8 / 文字数） |
 | `src/core/diagnostics.ts` | 書式チェック NC001〜NC011 |
 | `src/core/sequence.ts` | 一連番号チェック NC012〜NC014 と振り直し |
+| `src/core/structure.ts` | 構造解析（アウトライン・折りたたみ・定義・COPY） |
+| `src/core/copybook.ts` | 登録集原文ファイル名の照合ルール |
+| `src/features.ts` | アウトライン・折りたたみ・定義へ移動のプロバイダー |
 | `src/extension.ts` | VS Code との接続部分（診断・装飾・コマンド） |
 | `l10n/`, `package.nls*.json` | メッセージ（英語が原文、`ja` / `zh-cn` が翻訳） |
 | `samples/` | Shift_JIS・CRLF のサンプル（テストでも使用） |

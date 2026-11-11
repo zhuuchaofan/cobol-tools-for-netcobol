@@ -11,5 +11,7 @@
   "cfg.dimFixedAreas": "Dim the sequence area (columns 1-6) and identification area (columns 73-80).",
   "cmd.renumberSequence": "Renumber Sequence Area (columns 1-6)",
   "cfg.sequence.start": "First number used when renumbering the sequence area (columns 1-6).",
-  "cfg.sequence.step": "Increment used when renumbering the sequence area."
+  "cfg.sequence.step": "Increment used when renumbering the sequence area.",
+  "cfg.copybook.paths": "Folders searched for copybooks (`COPY name`) after the folder of the current file. Relative paths are resolved from the workspace folder; `${workspaceFolder}` is supported. `COPY name OF lib` also looks in a sub-folder named `lib`.",
+  "cfg.copybook.extensions": "File extensions tried for a copybook name, in order (matched case-insensitively). \"\" means the name as written."
 }

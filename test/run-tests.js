@@ -156,6 +156,113 @@ const codesAt = (diags) => diags.map((d) => `${d.line + 1}:${d.code}`).sort();
     assert.deepStrictEqual(analyze(lines, OPTS), []);
   });
 
+  console.log('structure');
+  const { parseStructure, copyAt } = require('../out/core/structure');
+  const { matchEntry, matchDir } = require('../out/core/copybook');
+  const outline = (nodes, depth = 0, out = []) => {
+    for (const n of nodes) {
+      out.push(`${'  '.repeat(depth)}${n.label}`);
+      outline(n.children, depth + 1, out);
+    }
+    return out;
+  };
+  const sample = parseStructure(sjis('samples/sample.cob'), 'shiftjis');
+  await test('outline of the sample program', () => {
+    assert.deepStrictEqual(outline(sample.roots), [
+      'URIAGE01',
+      '  IDENTIFICATION DIVISION',
+      '  ENVIRONMENT DIVISION',
+      '    CONFIGURATION SECTION',
+      '    INPUT-OUTPUT SECTION',
+      '  DATA DIVISION',
+      '    FILE SECTION',
+      '      FD URIAGE-FILE',
+      '        01 URIAGE-REC',
+      '          05 TOKUI-CD',
+      '          05 得意先名',
+      '          05 KINGAKU',
+      '    WORKING-STORAGE SECTION',
+      '      01 WS-FS',
+      '        88 WS-EOF',
+      '      01 合計金額',
+      '      01 WS-MSG',
+      '      01 WS-HEX',
+      '      01 FILLER',
+      '      COPY KYOTUREC',
+      '  PROCEDURE DIVISION',
+      '    MAIN-PROC SECTION',
+      '      1000-開始',
+      '      2000-READ',
+      '      2000-EXIT'
+    ]);
+  });
+  await test('ranges, details and definitions', () => {
+    const lines = sjis('samples/sample.cob');
+    const def = (k) => sample.definitions.get(k).map((n) => n.startLine + 1);
+    assert.deepStrictEqual(def('2000-READ'), [50]);
+    assert.deepStrictEqual(def('合計金額'), [27]);
+    assert.deepStrictEqual(def('URIAGE-FILE'), [19]);
+    const para = sample.definitions.get('1000-開始')[0];
+    assert.deepStrictEqual([para.startLine + 1, para.endLine + 1], [34, 49]);
+    const kin = sample.definitions.get('KINGAKU')[0];
+    assert.strictEqual(kin.detail, 'PIC S9(09)V99');
+    assert.strictEqual(sample.definitions.get('WS-EOF')[0].detail, 'VALUE "10"');
+    assert.strictEqual(lines[kin.nameSpan.line].slice(kin.nameSpan.start, kin.nameSpan.end), 'KINGAKU');
+    assert.ok(!sample.definitions.has('FILLER'));
+  });
+  await test('folding: divisions, paragraphs, comment block, EXEC SQL', () => {
+    const f = sample.folds.map((r) => `${r.start + 1}-${r.end + 1}${r.kind === 'comment' ? 'c' : ''}`);
+    for (const want of ['4-6c', '32-55', '34-49', '42-45', '20-23']) assert.ok(f.includes(want), `${want} not in ${f.join(' ')}`);
+  });
+  await test('COPY statements: plain, OF library, quoted, not inside literals', () => {
+    const s = parseStructure(
+      [
+        '000010 WORKING-STORAGE SECTION.',
+        '000020     COPY KYOTUREC.',
+        '000030     COPY MEMBER1 OF LIBA.',
+        '000040     COPY "sub/abc.cbl".',
+        '000050 01  X PIC X(20) VALUE "COPY NOTME".',
+        '000060*    COPY COMMENTED.'
+      ],
+      'shiftjis'
+    );
+    assert.deepStrictEqual(
+      s.copies.map((c) => [c.name, c.lib ?? '', c.quoted]),
+      [['KYOTUREC', '', false], ['MEMBER1', 'LIBA', false], ['sub/abc.cbl', '', true]]
+    );
+    assert.strictEqual(copyAt(s, 1, 18).name, 'KYOTUREC'); // cursor inside the name
+    assert.strictEqual(copyAt(s, 1, 12), undefined); // on the COPY keyword
+  });
+  await test('copybook file matching', () => {
+    const entries = ['kyoturec.cbl', 'KYOTUREC.CPY', 'other.cob', 'LIBA'];
+    const exts = ['', '.cbl', '.cob', '.cpy'];
+    assert.strictEqual(matchEntry(entries, 'KYOTUREC', exts), 'kyoturec.cbl'); // extension order wins
+    assert.strictEqual(matchEntry(['KYOTUREC.cpy', 'kyoturec.CPY'], 'KYOTUREC', ['.cpy']), 'KYOTUREC.cpy'); // exact case first
+    assert.strictEqual(matchEntry(entries, 'MISSING', exts), undefined);
+    assert.strictEqual(matchDir(entries, 'liba'), 'LIBA');
+  });
+  await test('copybook without divisions and nested programs', () => {
+    const cpy = parseStructure(sjis('samples/KYOTUREC.cpy'), 'shiftjis');
+    assert.deepStrictEqual(outline(cpy.roots), ['01 KYOTU-AREA', '  05 WS-CNT', '  05 WS-DATE', '  05 処理区分', '    88 新規', '    88 更新']);
+    const two = parseStructure(
+      [
+        '000010 IDENTIFICATION DIVISION.',
+        '000020 PROGRAM-ID. A.',
+        '000030 PROCEDURE DIVISION.',
+        '000040 P1.',
+        '000050     GOBACK.',
+        '000060 END PROGRAM A.',
+        '000070 ID DIVISION.',
+        '000080 PROGRAM-ID. "B".',
+        '000090 PROCEDURE DIVISION.',
+        '000100 EXIT.'
+      ],
+      'shiftjis'
+    );
+    assert.deepStrictEqual(two.roots.map((r) => [r.label, r.startLine + 1, r.endLine + 1]), [['A', 1, 6], ['B', 7, 10]]);
+    assert.deepStrictEqual(outline(two.roots[1].children), ['IDENTIFICATION DIVISION', 'PROCEDURE DIVISION']); // EXIT. is not a paragraph
+  });
+
   console.log('grammar');
   const vsctm = require('vscode-textmate');
   const oniguruma = require('vscode-oniguruma');

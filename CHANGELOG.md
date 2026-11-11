@@ -3,6 +3,9 @@
 ## 0.3.0
 - 名称を「COBOL Tools for NetCOBOL」に変更（非公式であることを明記）、Marketplace / Open VSX での公開準備
 - アイコン、日本語・英語・中国語の README、CI（Windows / macOS / Linux）と自動リリース
+- アウトライン（部・節・段落・FD・データ項目の階層、COPY）、折りたたみ
+- 定義へ移動：段落名・節名・データ名・ファイル名（COPY 先の登録集原文も検索）
+- COPY 句から登録集原文を開く（`netcobol.copybook.paths` / `netcobol.copybook.extensions`）
 
 ## 0.2.0
 - 一連番号（1〜6桁）の振り直しコマンド（コマンドパレット・右クリック、選択範囲のみも可）

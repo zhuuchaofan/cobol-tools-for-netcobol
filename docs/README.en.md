@@ -50,6 +50,19 @@ Messages follow the VS Code display language (Japanese / English / Simplified Ch
 - Also available as a quick fix (`Ctrl+.`) on NC012-NC014
 - Start and step: `netcobol.sequence.start` / `netcobol.sequence.step`. One `Ctrl+Z` undoes it
 
+### Outline, folding, go to definition
+- **Outline** (Outline view, `Ctrl+Shift+O`, breadcrumbs): program → divisions → sections → paragraphs; the data division as FD → 01 → 05 … → 88 with `PIC` shown
+- **Folding**: divisions, sections, paragraphs, group items, runs of comment lines, `EXEC SQL` blocks
+- **Go to definition** (`F12` / `Ctrl+Click`): paragraphs, sections, data names, file names; when not found in the file, the copybooks it `COPY`s are searched too (up to 3 levels)
+- **COPY**: `F12` / `Ctrl+Click` on the copybook name opens it
+  - Search order: the folder of the current file, then `netcobol.copybook.paths`
+  - Extensions tried: none, `.cbl`, `.cob`, `.cpy`, `.cobol` (case-insensitive)
+  - `COPY name OF lib` also looks in a sub-folder named `lib`
+
+```json
+"netcobol.copybook.paths": ["copylib", "${workspaceFolder}/common/copy"]
+```
+
 ### Other
 - `Ctrl+/` (`Cmd+/` on Mac) toggles a `*` comment in column 7
 - Defaults for NetCOBOL files: `files.encoding = shiftjis`, rulers at `6, 7, 11, 72`, trailing whitespace trimming off
@@ -88,6 +101,8 @@ File extensions: `.cob` `.cbl` `.cobol` `.cpy` `.pco`
 | `netcobol.dimFixedAreas` | `true` | Dim sequence and identification areas |
 | `netcobol.sequence.start` | `10` | First sequence number |
 | `netcobol.sequence.step` | `10` | Sequence number increment |
+| `netcobol.copybook.paths` | `[]` | Folders searched for copybooks |
+| `netcobol.copybook.extensions` | `["", ".cbl", ".cob", ".cpy", ".cobol"]` | Copybook extensions, tried in order |
 
 For UTF-8 sources set `files.encoding` to `utf8` and `netcobol.columnCounting` to `utf8`.
 
@@ -95,6 +110,7 @@ For UTF-8 sources set `files.encoding` to `utf8` and `netcobol.columnCounting` t
 - Fixed format only; variable and free format sources get wrong column checks (diagnostics can be turned off)
 - Shift_JIS width is "ASCII and half-width katakana = 1, everything else = 2"
 - Paragraph names written in area B are not checked (indistinguishable from multi-line statements)
+- Outline and go to definition use a simple line-based parser; `COPY … REPLACING` and qualified names (`OF` / `IN`) are not taken into account
 
 ## Feedback and contributing
 Report bugs and ideas in [Issues](https://github.com/zhuuchaofan/cobol-tools-for-netcobol/issues) (Japanese, English or Chinese).

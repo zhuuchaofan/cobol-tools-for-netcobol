@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { ColumnMode, INDICATOR_COL, LineColumns, fixedAreaRanges } from './core/columns';
 import { RawDiagnostic, RuleCode, analyze } from './core/diagnostics';
 import { SEQ_MAX, formatSeq, numberAfterPrevious, renumber } from './core/sequence';
+import { registerLanguageFeatures } from './features';
 
 const LANG = 'netcobol';
 const DEBOUNCE_MS = 250;
@@ -35,6 +36,7 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
+  registerLanguageFeatures(context);
   refreshAll();
 }
 

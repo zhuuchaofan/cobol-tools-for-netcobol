@@ -54,6 +54,19 @@
 - NC012〜NC014 の電球（`Ctrl+.`）からも実行可能
 - 開始番号・増分は `netcobol.sequence.start` / `netcobol.sequence.step` で変更可。`Ctrl+Z` 1回で元に戻せます
 
+### アウトライン・折りたたみ・定義へ移動
+- **アウトライン**（エクスプローラーのアウトライン、`Ctrl+Shift+O`、パンくず）：プログラム → 部 → 節 → 段落、データ部は FD → 01 → 05 … → 88 の階層で表示。`PIC` もあわせて表示
+- **折りたたみ**：部・節・段落・集団項目・連続する注記行・`EXEC SQL` ブロック
+- **定義へ移動**（`F12` / `Ctrl+クリック`）：段落名・節名・データ名・ファイル名。見つからなければ `COPY` している登録集原文の中も探します（3階層まで）
+- **COPY 句**：登録集原文の名前の上で `F12` / `Ctrl+クリック` するとそのファイルを開きます
+  - 探す場所：編集中のファイルと同じフォルダー → `netcobol.copybook.paths` のフォルダー
+  - 拡張子：なし・`.cbl`・`.cob`・`.cpy`・`.cobol` の順（大文字小文字は区別しない）
+  - `COPY 名前 OF ライブラリ` は `ライブラリ` という名前のサブフォルダーも探します
+
+```json
+"netcobol.copybook.paths": ["copylib", "${workspaceFolder}/common/copy"]
+```
+
 ### その他
 - `Ctrl+/`（Mac は `Cmd+/`）：7桁目の `*` で注記行を切り替え
 - NetCOBOL ファイルの既定値：`files.encoding = shiftjis`、ルーラー `6, 7, 11, 72`、行末空白の自動削除オフ
@@ -92,6 +105,8 @@ VSCodium・Cursor などは [Open VSX](https://open-vsx.org/extension/zhuuchaofa
 | `netcobol.dimFixedAreas` | `true` | 一連番号領域・プログラム識別領域を薄く表示 |
 | `netcobol.sequence.start` | `10` | 一連番号の開始番号 |
 | `netcobol.sequence.step` | `10` | 一連番号の増分 |
+| `netcobol.copybook.paths` | `[]` | 登録集原文を探すフォルダー |
+| `netcobol.copybook.extensions` | `["", ".cbl", ".cob", ".cpy", ".cobol"]` | 登録集原文の拡張子（この順に試す） |
 
 UTF-8 のソースでは `files.encoding` を `utf8`、`netcobol.columnCounting` を `utf8` にしてください。
 
@@ -99,6 +114,7 @@ UTF-8 のソースでは `files.encoding` を `utf8`、`netcobol.columnCounting`
 - 固定形式のみ対応です。可変形式・自由形式のソースでは桁チェックが合いません（チェックは無効にできます）
 - Shift_JIS の桁数は「ASCII・半角カナ＝1、それ以外＝2」で計算しています
 - B領域から始まる段落名はチェックしません（複数行にわたる文と区別できないため）
+- アウトライン・定義へ移動は行単位の簡易解析です。`COPY … REPLACING` の置き換えや修飾（`OF` / `IN`）は考慮しません
 
 ## フィードバック・貢献
 不具合報告や要望は [Issues](https://github.com/zhuuchaofan/cobol-tools-for-netcobol/issues) へ（日本語・English・中文 OK）。

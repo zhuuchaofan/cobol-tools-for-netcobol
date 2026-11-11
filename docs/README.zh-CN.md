@@ -50,6 +50,19 @@
 - NC012–NC014 的灯泡（`Ctrl+.`）也能一键执行
 - 起始值、步长可在 `netcobol.sequence.start` / `netcobol.sequence.step` 修改；`Ctrl+Z` 一步撤销
 
+### 大纲、折叠、跳转定义
+- **大纲**（资源管理器的大纲视图、`Ctrl+Shift+O`、面包屑）：程序 → DIVISION → SECTION → 段落；数据部按 FD → 01 → 05 … → 88 层级显示，并附带 `PIC`
+- **折叠**：DIVISION、SECTION、段落、组项目、连续注释行、`EXEC SQL` 块
+- **跳转定义**（`F12` / `Ctrl+点击`）：段落名、SECTION 名、数据名、文件名；当前文件找不到时，会继续在 `COPY` 进来的 copybook 里找（最多 3 层）
+- **COPY 句**：在 copybook 名上 `F12` / `Ctrl+点击` 直接打开该文件
+  - 查找位置：当前文件所在文件夹 → `netcobol.copybook.paths` 里的文件夹
+  - 扩展名：无扩展名、`.cbl`、`.cob`、`.cpy`、`.cobol` 依次尝试（不区分大小写）
+  - `COPY 名称 OF 库名` 还会查找名为该库名的子文件夹
+
+```json
+"netcobol.copybook.paths": ["copylib", "${workspaceFolder}/common/copy"]
+```
+
 ### 其他
 - `Ctrl+/`（Mac 为 `Cmd+/`）：在第 7 列切换 `*` 注释
 - NetCOBOL 文件默认：`files.encoding = shiftjis`、标尺 `6, 7, 11, 72`、关闭行尾空白自动删除
@@ -88,6 +101,8 @@ VSCodium、Cursor 等请从 [Open VSX](https://open-vsx.org/extension/zhuuchaofa
 | `netcobol.dimFixedAreas` | `true` | 淡化序号区与标识区 |
 | `netcobol.sequence.start` | `10` | 序号起始值 |
 | `netcobol.sequence.step` | `10` | 序号步长 |
+| `netcobol.copybook.paths` | `[]` | 查找 copybook 的文件夹 |
+| `netcobol.copybook.extensions` | `["", ".cbl", ".cob", ".cpy", ".cobol"]` | copybook 扩展名（按顺序尝试） |
 
 UTF-8 源码：把 `files.encoding` 改为 `utf8`，`netcobol.columnCounting` 设为 `utf8`。
 
@@ -95,6 +110,7 @@ UTF-8 源码：把 `files.encoding` 改为 `utf8`，`netcobol.columnCounting` �
 - 只支持固定形式；可变形式 / 自由形式源码的列检查会不准（可关闭诊断）
 - Shift_JIS 宽度按「ASCII・半角片假名 = 1，其余 = 2」计算
 - 不检查写在 B 区的段落名（与跨行语句难以区分）
+- 大纲和跳转是按行的简易解析，不处理 `COPY … REPLACING` 的替换和限定名（`OF` / `IN`）
 
 ## 反馈与贡献
 问题和需求请提交到 [Issues](https://github.com/zhuuchaofan/cobol-tools-for-netcobol/issues)（日本語・English・中文均可）。
