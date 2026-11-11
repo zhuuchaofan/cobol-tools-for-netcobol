@@ -2,7 +2,7 @@
   "name": "cobol-tools-for-netcobol",
   "displayName": "COBOL Tools for NetCOBOL",
   "description": "%ext.description%",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "publisher": "zhuuchaofan",
   "author": {
     "name": "zhuuchaofan"
@@ -165,7 +165,9 @@
               "NC015",
               "NC016",
               "NC017",
-              "NC018"
+              "NC018",
+              "NC019",
+              "NC020"
             ]
           },
           "default": [],

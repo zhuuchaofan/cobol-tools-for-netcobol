@@ -22,7 +22,8 @@ VS Code でこのフォルダーを開いて `F5` を押すと、拡張機能を
 
 | パス | 内容 |
 |---|---|
-| `src/core/keywords.ts` | 予約語・組込み関数などの一覧（ハイライトとチェックの共通データ） |
+| `src/core/keywords.ts` | 色分け用の語の分類と組込み関数・特殊レジスタ・機能名の一覧（ハイライトとチェックの共通データ） |
+| `src/core/reserved.ts` | 予約語の一覧。COBOL文法書 付録A から作成。NC018 の判定はこれだけを使う |
 | `scripts/build-grammar.js` | TextMate 文法の生成元。**`syntaxes/*.json` は直接編集せず**、こちらか `keywords.ts` を編集して `npm run compile` |
 | `src/core/columns.ts` | 桁計算（Shift_JIS / UTF-8 / 文字数） |
 | `src/core/diagnostics.ts` | 書式チェック NC001〜NC011 |

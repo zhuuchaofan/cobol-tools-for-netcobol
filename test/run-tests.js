@@ -191,7 +191,7 @@ const codesAt = (diags) => diags.map((d) => `${d.line + 1}:${d.code}`).sort();
       '      COPY KYOTUREC',
       '  PROCEDURE DIVISION',
       '    MAIN-PROC SECTION',
-      '      1000-開始',
+      '      開始処理',
       '      2000-READ',
       '      2000-EXIT'
     ]);
@@ -202,7 +202,7 @@ const codesAt = (diags) => diags.map((d) => `${d.line + 1}:${d.code}`).sort();
     assert.deepStrictEqual(def('2000-READ'), [50]);
     assert.deepStrictEqual(def('合計金額'), [27]);
     assert.deepStrictEqual(def('URIAGE-FILE'), [19]);
-    const para = sample.definitions.get('1000-開始')[0];
+    const para = sample.definitions.get('開始処理')[0];
     assert.deepStrictEqual([para.startLine + 1, para.endLine + 1], [34, 49]);
     const kin = sample.definitions.get('KINGAKU')[0];
     assert.strictEqual(kin.detail, 'PIC S9(09)V99');
@@ -322,6 +322,116 @@ const codesAt = (diags) => diags.map((d) => `${d.line + 1}:${d.code}`).sort();
     assert.deepStrictEqual(s.copies[0].replacing, [{ from: ':P:', to: 'WK' }]);
   });
 
+  console.log('manual-based rules (v0.5)');
+  await test('word tables follow 付録A (reserved words) and 2.7 (intrinsic functions)', () => {
+    const K = require('../out/core/keywords');
+    const R = require('../out/core/reserved');
+    assert.strictEqual(R.RESERVED_WORDS.length, 620);
+    assert.strictEqual(new Set(R.RESERVED_WORDS).size, 620);
+    for (const w of ['UPDATE', 'FORMAT', 'TITLE', 'DEFAULT', 'EXAMINE', 'SKIP1', 'ZERO-FILL', 'SORT-STATUS']) assert.ok(K.RESERVED_FOR_NAMES.has(w), w);
+    // .NET-only words, function-names (system names) and later-version functions are not reserved on Linux
+    for (const w of ['TRY', 'CATCH', 'PARTIAL', 'LOCAL-STORAGE', 'SYSIN', 'CONSOLE', 'SYSERR', 'ABS', 'TRIM']) assert.ok(!K.RESERVED_FOR_NAMES.has(w), w);
+    assert.strictEqual(K.INTRINSIC_FUNCTIONS.length, 56);
+    for (const f of ['CAST-ALPHANUMERIC', 'STORED-CHAR-LENGTH', 'UCS2-OF', 'ACP-OF', 'PRESENT-VALUE']) assert.ok(K.INTRINSIC_FUNCTIONS.includes(f), f);
+    // everything the colouring lists call a keyword is a reserved word, except the few documented exceptions
+    const lists = ['VERBS_CONTROL', 'VERBS', 'SCOPE_TERMINATORS', 'STRUCTURE', 'CLAUSES', 'USAGES', 'ENVIRONMENT', 'PHRASES',
+      'CONDITION_WORDS', 'FIGURATIVE', 'SPECIAL_REGISTERS', 'ACCEPT_SOURCES', 'SCREEN_WORDS'];
+    for (const l of lists) for (const w of K[l]) if (!K.NOT_RESERVED_IN_V105.includes(w)) assert.ok(K.RESERVED_FOR_NAMES.has(w), `${l}: ${w}`);
+  });
+  await test('NC018 follows the whole reserved list; system names and .NET words are allowed', () => {
+    const got = codes([
+      '000010 DATA DIVISION.',
+      '000020 WORKING-STORAGE SECTION.',
+      '000030 01  UPDATE         PIC X.',
+      '000040 01  TRY            PIC X.',
+      '000050 01  SYSIN          PIC X.',
+      '000060 01  CONSOLE        PIC X.',
+      '000070 PROCEDURE DIVISION.',
+      '000080 EJECT.',
+      '000090 FORMAT.',
+      '000100 MAIN SECTION.',
+      '000110 UPDATE SECTION.'
+    ]);
+    assert.deepStrictEqual(got.sort(), ['11:NC018', '3:NC018', '9:NC018'].sort());
+  });
+  await test('NC019 literal length limits (1.2.3)', () => {
+    const v = (n, body) => `${String(n * 10).padStart(6, '0')} 01 W${n} PIC X VALUE ${body}.`;
+    const got = codes([
+      '000010 @OPTIONS SRF(VAR)',
+      '000020 WORKING-STORAGE SECTION.',
+      v(3, '"' + 'A'.repeat(160) + '"'), //  3: 160 bytes is the maximum
+      v(4, '"' + 'A'.repeat(161) + '"'), //  4: too long
+      v(5, '""'), //                       5: empty
+      v(6, 'X"A"'), //                     6: odd number of digits, and fewer than 2
+      v(7, 'NC""'), //                     7: no characters
+      v(8, 'B""'), //                      8: no digits
+      v(9, 'B"' + '1'.repeat(161) + '"'), // 9: too many digits
+      v(10, 'NX"0041"'), //                10: ok
+      v(11, 'NX"41"'), //                 11: not groups of four, fewer than 4
+      v(12, 'N"' + 'あ'.repeat(81) + '"') // 12: 81 national characters
+    ]);
+    assert.deepStrictEqual(
+      got.sort(),
+      ['11:NC015', '11:NC019', '12:NC019', '4:NC019', '5:NC019', '6:NC015', '6:NC019', '7:NC019', '8:NC019', '9:NC019'].sort()
+    );
+  });
+  await test('literals are checked across continuation lines (blanks to column 72 count)', () => {
+    const open = '000010 01  WS-LONG  PIC X(200) VALUE "';
+    const first = open + 'A'.repeat(72 - open.length);
+    const cont = (n) => '000020' + '-    "' + 'B'.repeat(n);
+    assert.deepStrictEqual(codes([first, cont(10) + '".']), []);
+    // 34 + 60 + 60 + 55 characters > 160 bytes: reported on the line where the literal starts
+    assert.deepStrictEqual(codes([first, cont(60), cont(60), cont(55) + '".']).filter((c) => c.endsWith('NC019')), ['1:NC019']);
+    // a hex literal that is continued early keeps the blanks up to column 72 as digits
+    assert.ok(codes(['000010 01  H  PIC X VALUE X"0A0A', '000020-    "0A".']).includes('1:NC015'));
+    assert.deepStrictEqual(codes(['000010 01  H  PIC X(40) VALUE X"' + '0A'.repeat(20), '000020-    "0A".']), []);
+  });
+  await test('NC020 user-defined word rules (1.2.2.1)', () => {
+    const got = codes([
+      '000010 DATA DIVISION.',
+      '000020 WORKING-STORAGE SECTION.',
+      '000030 01  ' + 'A'.repeat(30) + '  PIC X.',
+      '000040 01  ' + 'A'.repeat(31) + '  PIC X.',
+      '000050 01  -ABC           PIC X.',
+      '000060 01  ABC-           PIC X.',
+      '000070 01  A__B           PIC X.',
+      '000080 01  A_B-C          PIC X.',
+      '000090 01  123            PIC X.',
+      '000100 01  顧客名         PIC X.',
+      '000110 01  ＷＫ１         PIC X.',
+      '000120 PROCEDURE DIVISION.',
+      '000130 100.',
+      '000140 A--B.'
+    ]);
+    assert.deepStrictEqual(got.sort(), ['11:NC020', '4:NC020', '5:NC020', '6:NC020', '7:NC020', '9:NC020'].sort());
+    const mixed = analyze(['000010 WORKING-STORAGE SECTION.', '000020 01  WK-氏名       PIC X(10).'], OPTS);
+    assert.deepStrictEqual(mixed.map((d) => [d.code, d.severity, d.args[1]]), [['NC020', 'info', 'mixed']]);
+  });
+  await test('DECLARATIVES. in area A is not a paragraph name', () => {
+    assert.deepStrictEqual(
+      codes([
+        '000010 PROCEDURE DIVISION.',
+        '000020 DECLARATIVES.',
+        '000030 S1 SECTION.',
+        '000040     USE AFTER ERROR PROCEDURE ON F.',
+        '000050 P1.',
+        '000060     EXIT.',
+        '000070 END DECLARATIVES.'
+      ]),
+      []
+    );
+  });
+  await test('line length: 251 bytes in variable format; COPY and REPLACE may start in area A', () => {
+    const line = (n) => '000020     DISPLAY A.'.padEnd(n);
+    assert.strictEqual(line(251).length, 251);
+    assert.deepStrictEqual(codes(['000010 @OPTIONS SRF(VAR)', line(251)]), []);
+    assert.deepStrictEqual(codes(['000010 @OPTIONS SRF(VAR)', line(252)]), ['2:NC004']);
+    assert.deepStrictEqual(
+      codes(['000010 PROCEDURE DIVISION.', '000020 COPY PROCLIB.', '000030 REPLACE ==A== BY ==B==.', '000040 MOVE 1 TO X.']),
+      ['4:NC006']
+    );
+  });
+
   console.log('grammar');
   const vsctm = require('vscode-textmate');
   const oniguruma = require('vscode-oniguruma');
@@ -366,7 +476,7 @@ const codesAt = (diags) => diags.map((d) => `${d.line + 1}:${d.code}`).sort();
     expectScope('PROCEDURE', 'keyword.control.division');
     expectScope('WORKING-STORAGE', 'keyword.control.section');
     expectScope('MAIN-PROC', 'entity.name.type.section');
-    expectScope('1000-開始', 'entity.name.function.paragraph');
+    expectScope('開始処理', 'entity.name.function.paragraph');
     expectScope('2000-READ', 'entity.name.function.paragraph'); // PERFORM target
     expectScope('URIAGE01', 'entity.name.function.program');
   });
@@ -395,6 +505,13 @@ const codesAt = (diags) => diags.map((d) => `${d.line + 1}:${d.code}`).sort();
     const t = tokenize(['000100     COPY K REPLACING ==:PRE:== BY ==WS==.', '000200     MOVE FUNCTION UPPER-CASE(A) TO B.']);
     assert.ok(t.some((x) => x.text === ':PRE:' && x.scopes.includes('string.other.pseudo-text')));
     assert.ok(t.some((x) => x.text === 'UPPER-CASE' && x.scopes.includes('support.function.builtin')));
+  });
+  await test('all reserved words are keywords; function-names are not; manual function names are built-ins', () => {
+    const t = tokenize(['000010 01  X  PIC X VALUE ZERO-FILL.', '000020     ACCEPT A FROM SYSIN.', '000030     MOVE FUNCTION STORED-CHAR-LENGTH(A) TO B.']);
+    const sc = (text) => (t.find((x) => x.text === text) || { scopes: '' }).scopes;
+    assert.ok(sc('ZERO-FILL').includes('keyword.other.netcobol'), sc('ZERO-FILL'));
+    assert.ok(sc('SYSIN').includes('variable.language.netcobol'), sc('SYSIN'));
+    assert.ok(sc('STORED-CHAR-LENGTH').includes('support.function.builtin.netcobol'), sc('STORED-CHAR-LENGTH'));
   });
   await test('hyphenated names are not split into keywords', () => {
     const line = '000100     MOVE WS-MOVE-END TO END-X.';

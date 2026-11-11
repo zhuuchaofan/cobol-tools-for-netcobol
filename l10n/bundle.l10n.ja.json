@@ -26,5 +26,14 @@
   "Header \"{0}\" must be followed by a separator period.": "見出し「{0}」の後には終止符（.）が必要です。",
   "Level number {0} is not valid (01-49, 66, 77, 88).": "レベル番号 {0} は使えません（01〜49、66、77、88）。",
   "\"{0}\" is a reserved word and cannot be used as a user-defined name.": "「{0}」は予約語のため、利用者語として使えません。",
-  "This source is in free format (SRF(FREE)) and has no sequence area.": "自由形式（SRF(FREE)）のソースには一連番号領域がありません。"
+  "This source is in free format (SRF(FREE)) and has no sequence area.": "自由形式（SRF(FREE)）のソースには一連番号領域がありません。",
+  "Character literal is {0} bytes long; it must be {1} bytes.": "文字定数が {0} バイトです。長さは {1} バイトでなければなりません。",
+  "National literal has {0} characters; it must have {1}.": "日本語文字定数が {0} 文字です。文字数は {1} でなければなりません。",
+  "{0}\"...\" has {1} digits; it must have {2}.": "{0}\"…\" の桁数が {1} です。桁数は {2} でなければなりません。",
+  "\"{0}\" is {1} characters long; user-defined words are limited to 30 characters.": "「{0}」は {1} 文字です。利用者語は30文字以内でなければなりません。",
+  "\"{0}\" cannot begin or end with a hyphen or an underscore.": "「{0}」の先頭・末尾にハイフンやアンダースコアは使えません。",
+  "\"{0}\" contains consecutive underscores.": "「{0}」にアンダースコアが連続しています。",
+  "\"{0}\" must contain at least one letter.": "「{0}」には英字を1文字以上含める必要があります。",
+  "\"{0}\" mixes Japanese and ASCII characters; a Japanese user-defined word must consist of Japanese characters only.": "「{0}」は日本語文字と英数字が混在しています。日本語利用者語は日本語文字だけで構成します。",
+  "\"{0}\" needs at least one kanji, hiragana, katakana or prolonged sound mark (ー).": "「{0}」には漢字・ひらがな・カタカナ・長音記号（ー）のいずれかを1文字以上含める必要があります。"
 }

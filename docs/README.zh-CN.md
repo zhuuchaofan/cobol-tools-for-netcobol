@@ -43,13 +43,16 @@
 | NC015 | 错误 | 常量内容不合法（`X"…"` 须成对的16进制、`NX"…"` 须4位一组、`B"…"` 只能 0/1、`N"…"`/`NC"…"` 只能全角） |
 | NC016 | 警告 | DIVISION / SECTION 标题后缺少句点 |
 | NC017 | 警告 | 无效层号（01-49、66、77、88 以外） |
-| NC018 | 错误 | 把保留字用作数据名、段落名或文件名 |
+| NC018 | 错误 | 把保留字（附录A）用作数据名、段落名、节名或文件名 |
+| NC019 | 警告 | 常量长度超出范围（字符常量 1-160 字节，`X` 2-320 位，`NX` 4-320 位，`N`/`NC` 1-80 字，`B` 1-160 位） |
+| NC020 | 警告 | 用户定义名形式不合法（超过 30 个字符、首尾是 `-` `_`、含 `__`、不含字母、日文名不含汉字/假名）。日文与半角英数混用显示为提示 |
 
 提示信息跟随 VS Code 显示语言（日本語 / English / 简体中文）。
 
 - 第 7 列为 `D` 的调试行：`SOURCE-COMPUTER` 没写 `WITH DEBUGGING MODE` 时按注释行处理，并以斜体淡化显示
 - 有 `@OPTIONS SRF(VAR)` 时按可变形式（没有第 72 列右边界）；`SRF(FREE)` 时按自由形式关闭列检查（也可用设置 `netcobol.sourceFormat` 指定）
-- 保留字和内置函数列表基于 COBOL 85 标准与 NetCOBOL 常见扩展，之后会再对照 COBOL文法書 核对
+- 保留字、内置函数、特殊寄存器、功能名依据 **NetCOBOL V10.5 COBOL文法書（B1WD-1361-06Z0）**。不同版本的保留字可能有增减，不一致时请关闭 `NC018` 并反馈
+- `N"…"` / `NC"…"` 的全角检查（NC015）以 Shift_JIS（非 Unicode 运行模式）为前提。Unicode 模式的程序请在 `netcobol.diagnostics.disabledRules` 中关闭
 
 ### 序号区重新编号
 - 编辑器右键菜单，或命令面板「NetCOBOL: 序号区（第1-6列）重新编号」
@@ -119,7 +122,7 @@ UTF-8 源码：把 `files.encoding` 改为 `utf8`，`netcobol.columnCounting` �
 - 支持固定形式和可变形式；自由形式只有高亮，不做列检查和大纲
 - Shift_JIS 宽度按「ASCII・半角片假名 = 1，其余 = 2」计算
 - 不检查写在 B 区的段落名（与跨行语句难以区分）
-- 大纲和跳转是按行的简易解析，不处理 `REPLACE` 语句
+- 大纲和跳转是按行的简易解析，不处理 `REPLACE` 语句和 `COPY … JOINING / DISJOINING`
 
 ## 反馈与贡献
 问题和需求请提交到 [Issues](https://github.com/zhuuchaofan/cobol-tools-for-netcobol/issues)（日本語・English・中文均可）。

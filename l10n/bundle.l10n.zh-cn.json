@@ -26,5 +26,14 @@
   "Header \"{0}\" must be followed by a separator period.": "标题“{0}”后面必须有句点（.）。",
   "Level number {0} is not valid (01-49, 66, 77, 88).": "层号 {0} 无效（只能是 01-49、66、77、88）。",
   "\"{0}\" is a reserved word and cannot be used as a user-defined name.": "“{0}”是保留字，不能用作用户定义名。",
-  "This source is in free format (SRF(FREE)) and has no sequence area.": "自由形式（SRF(FREE)）的源码没有序号区。"
+  "This source is in free format (SRF(FREE)) and has no sequence area.": "自由形式（SRF(FREE)）的源码没有序号区。",
+  "Character literal is {0} bytes long; it must be {1} bytes.": "字符常量长度为 {0} 字节，必须为 {1} 字节。",
+  "National literal has {0} characters; it must have {1}.": "日文常量有 {0} 个字符，必须为 {1} 个。",
+  "{0}\"...\" has {1} digits; it must have {2}.": "{0}\"…\" 有 {1} 位，必须为 {2} 位。",
+  "\"{0}\" is {1} characters long; user-defined words are limited to 30 characters.": "“{0}”有 {1} 个字符，用户定义名最长 30 个字符。",
+  "\"{0}\" cannot begin or end with a hyphen or an underscore.": "“{0}”的开头和结尾不能是连字符或下划线。",
+  "\"{0}\" contains consecutive underscores.": "“{0}”含有连续的下划线。",
+  "\"{0}\" must contain at least one letter.": "“{0}”至少要包含一个英文字母。",
+  "\"{0}\" mixes Japanese and ASCII characters; a Japanese user-defined word must consist of Japanese characters only.": "“{0}”混用了日文字符和半角英数；日文用户定义名必须全部由日文字符组成。",
+  "\"{0}\" needs at least one kanji, hiragana, katakana or prolonged sound mark (ー).": "“{0}”至少要包含一个汉字、平假名、片假名或长音符（ー）。"
 }

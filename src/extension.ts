@@ -163,6 +163,30 @@ function message(code: RuleCode, a: string[]): string {
       return vscode.l10n.t('Level number {0} is not valid (01-49, 66, 77, 88).', a[0]);
     case 'NC018':
       return vscode.l10n.t('"{0}" is a reserved word and cannot be used as a user-defined name.', a[0]);
+    case 'NC019':
+      switch (a[3]) {
+        case 'bytes':
+          return vscode.l10n.t('Character literal is {0} bytes long; it must be {1} bytes.', a[1], a[2]);
+        case 'chars':
+          return vscode.l10n.t('National literal has {0} characters; it must have {1}.', a[1], a[2]);
+        default:
+          return vscode.l10n.t('{0}"..." has {1} digits; it must have {2}.', a[0], a[1], a[2]);
+      }
+    case 'NC020':
+      switch (a[1]) {
+        case 'length':
+          return vscode.l10n.t('"{0}" is {1} characters long; user-defined words are limited to 30 characters.', a[0], a[2]);
+        case 'edge':
+          return vscode.l10n.t('"{0}" cannot begin or end with a hyphen or an underscore.', a[0]);
+        case 'underscores':
+          return vscode.l10n.t('"{0}" contains consecutive underscores.', a[0]);
+        case 'noletter':
+          return vscode.l10n.t('"{0}" must contain at least one letter.', a[0]);
+        case 'mixed':
+          return vscode.l10n.t('"{0}" mixes Japanese and ASCII characters; a Japanese user-defined word must consist of Japanese characters only.', a[0]);
+        default:
+          return vscode.l10n.t('"{0}" needs at least one kanji, hiragana, katakana or prolonged sound mark (ー).', a[0]);
+      }
   }
 }
 

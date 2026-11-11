@@ -1,12 +1,18 @@
 /**
  * Word lists for NetCOBOL, grouped by role.
  *
- * Source: the COBOL 85 standard reserved words, plus NetCOBOL extensions as far as known
- * without the 文法書 at hand. TODO: verify against 付録A 予約語一覧 / 2.7 組込み関数機能
- * of the NetCOBOL COBOL文法書 and adjust.
+ * Verified against the NetCOBOL V10.5 COBOL文法書 (B1WD-1361-06Z0):
+ *   - reserved words: 付録A, kept in reserved.ts (the only list that decides NC018)
+ *   - intrinsic functions: 2.7 組込み関数機能 (INTRINSIC_FUNCTIONS)
+ *   - special registers: 1.2.2.3 (SPECIAL_REGISTERS)
+ *   - function-names (機能名): 4.2.3 特殊名段落 (SYSTEM_NAMES)
+ * The category lists below only decide how a word is coloured. A few words in them are
+ * not reserved in V10.5 (see NOT_RESERVED_IN_V105); they are still coloured because later
+ * versions and other dialects use them, but they are never reported as reserved.
  *
  * Used by scripts/build-grammar.js (highlighting) and by the diagnostics / parser.
  */
+import { RESERVED_NOT_ON_LINUX, RESERVED_WORDS } from './reserved';
 
 // ---------------------------------------------------------------- statements
 export const VERBS_CONTROL = [
@@ -104,17 +110,40 @@ export const SPECIAL_REGISTERS = [
   'RETURN-CODE', 'SORT-RETURN', 'LENGTH', 'ADDRESS', 'WHEN-COMPILED', 'LINAGE-COUNTER',
   'LINE-COUNTER', 'PAGE-COUNTER', 'DEBUG-ITEM', 'DEBUG-LINE', 'DEBUG-NAME',
   'DEBUG-CONTENTS', 'DEBUG-SUB-1', 'DEBUG-SUB-2', 'DEBUG-SUB-3', 'PROGRAM-STATUS',
-  'SELF', 'SUPER', 'EXCEPTION-OBJECT'
+  'SELF', 'SUPER', 'EXCEPTION-OBJECT',
+  // 1.2.2.3: sort/merge and display-file special registers
+  'SORT-STATUS', 'SORT-CORE-SIZE', 'EDIT-MODE', 'EDIT-OPTION', 'EDIT-OPTION2',
+  'EDIT-OPTION3', 'EDIT-COLOR', 'EDIT-STATUS', 'EDIT-CURSOR'
 ];
 
 /** ACCEPT ... FROM sources (reserved) */
 export const ACCEPT_SOURCES = ['DATE', 'DAY', 'DAY-OF-WEEK', 'TIME'];
 
-/** function-names usable in SPECIAL-NAMES / ACCEPT / DISPLAY (not reserved) */
+/**
+ * function-names (機能名, 4.2.3.1-4.2.3.3) usable in SPECIAL-NAMES / ACCEPT / DISPLAY.
+ * They are system names, not reserved words, so programs may also use them as user words.
+ * YYYYMMDD / YYYYDDD are later additions (ACCEPT ... FROM DATE YYYYMMDD).
+ */
 export const SYSTEM_NAMES = [
-  'SYSIN', 'SYSOUT', 'SYSERR', 'CONSOLE', 'ARGUMENT-NUMBER', 'ARGUMENT-VALUE',
-  'ENVIRONMENT-NAME', 'ENVIRONMENT-VALUE', 'YYYYMMDD', 'YYYYDDD'
+  'SYSIN', 'SYSOUT', 'SYSERR', 'SYSPUNCH', 'CONSOLE', 'ARGUMENT-NUMBER', 'ARGUMENT-VALUE',
+  'ENVIRONMENT-NAME', 'ENVIRONMENT-VALUE', 'YYYYMMDD', 'YYYYDDD',
+  'CHANNEL-01', 'CHANNEL-02', 'CHANNEL-03', 'CHANNEL-04', 'CHANNEL-05', 'CHANNEL-06',
+  'CHANNEL-07', 'CHANNEL-08', 'CHANNEL-09', 'CHANNEL-10', 'CHANNEL-11', 'CHANNEL-12',
+  'STACKER-01', 'STACKER-02',
+  'SWITCH-0', 'SWITCH-1', 'SWITCH-2', 'SWITCH-3', 'SWITCH-4', 'SWITCH-5', 'SWITCH-6',
+  'SWITCH-7', 'SWITCH-8'
 ];
+
+/**
+ * Words in the colouring lists above that are not reserved words on Linux in V10.5:
+ * not in 付録A at all, or (RESUME) reserved only for the .NET exception handling feature.
+ */
+export const NOT_RESERVED_IN_V105: readonly string[] = [
+  'LOCAL-STORAGE', 'PROGRAM-POINTER', 'SHARING', 'RECURSIVE', 'AUTO-SKIP', 'COL', 'RESUME'
+];
+
+/** compiler-directing statements that may stand alone on a line (not paragraph names) */
+export const LISTING_DIRECTIVES: readonly string[] = ['EJECT', 'SKIP1', 'SKIP2', 'SKIP3', 'TITLE'];
 
 // ---------------------------------------------------------------- screen section (extension)
 export const SCREEN_WORDS = [
@@ -124,24 +153,28 @@ export const SCREEN_WORDS = [
 ];
 
 // ---------------------------------------------------------------- intrinsic functions
-/** FUNCTION names: COBOL 85 amendment set, plus common later additions (to verify). */
+/** FUNCTION names listed in 2.7 組込み関数機能 (V10.5): 56 functions. */
 export const INTRINSIC_FUNCTIONS = [
-  'ABS', 'ACOS', 'ANNUITY', 'ASIN', 'ATAN', 'CHAR', 'COS', 'CURRENT-DATE',
-  'DATE-OF-INTEGER', 'DATE-TO-YYYYMMDD', 'DAY-OF-INTEGER', 'DAY-TO-YYYYDDD', 'E',
-  'FACTORIAL', 'FRACTION-PART', 'INTEGER', 'INTEGER-OF-DATE', 'INTEGER-OF-DAY',
-  'INTEGER-PART', 'LENGTH', 'LOG', 'LOG10', 'LOWER-CASE', 'MAX', 'MEAN', 'MEDIAN',
-  'MIDRANGE', 'MIN', 'MOD', 'NUMVAL', 'NUMVAL-C', 'ORD', 'ORD-MAX', 'ORD-MIN', 'PI',
-  'PRESENT-VALUE', 'RANDOM', 'RANGE', 'REM', 'REVERSE', 'SIGN', 'SIN', 'SQRT',
-  'STANDARD-DEVIATION', 'SUM', 'TAN', 'UPPER-CASE', 'VARIANCE', 'WHEN-COMPILED',
-  'YEAR-TO-YYYY', 'NATIONAL-OF', 'DISPLAY-OF', 'TRIM', 'TRIML', 'TRIMR', 'ADDR', 'LENG',
-  'STORED-CHAR-LENGTH', 'UCS2-OF', 'UTF8-OF'
+  'ACOS', 'ACP-OF', 'ADDR', 'ANNUITY', 'ASIN', 'ATAN', 'CAST-ALPHANUMERIC', 'CHAR', 'COS',
+  'CURRENT-DATE', 'DATE-OF-INTEGER', 'DAY-OF-INTEGER', 'DISPLAY-OF', 'ENUM-AND', 'ENUM-NOT',
+  'ENUM-OR', 'FACTORIAL', 'INTEGER', 'INTEGER-OF-DATE', 'INTEGER-OF-DAY', 'INTEGER-PART',
+  'LENG', 'LENGTH', 'LOG', 'LOG10', 'LOWER-CASE', 'MAX', 'MEAN', 'MEDIAN', 'MIDRANGE', 'MIN',
+  'MOD', 'NATIONAL', 'NATIONAL-OF', 'NUMVAL', 'NUMVAL-C', 'ORD', 'ORD-MAX', 'ORD-MIN',
+  'PRESENT-VALUE', 'RANDOM', 'RANGE', 'REM', 'REVERSE', 'SIN', 'SQRT', 'STANDARD-DEVIATION',
+  'STORED-CHAR-LENGTH', 'SUM', 'TAN', 'UCS2-OF', 'UNICODE-OF', 'UPPER-CASE', 'UTF8-OF',
+  'VARIANCE', 'WHEN-COMPILED'
+];
+
+/** Functions of COBOL 2002 and later versions: coloured, but not in the V10.5 manual. */
+export const INTRINSIC_FUNCTIONS_EXTRA = [
+  'ABS', 'DATE-TO-YYYYMMDD', 'DAY-TO-YYYYDDD', 'E', 'FRACTION-PART', 'PI', 'SIGN',
+  'YEAR-TO-YYYY', 'TRIM', 'TRIML', 'TRIMR'
 ];
 
 // ---------------------------------------------------------------- derived sets
 const up = (a: readonly string[]) => a.map((w) => w.toUpperCase());
 
-/** every word highlighted as a keyword */
-export const ALL_KEYWORDS: ReadonlySet<string> = new Set(
+const CATEGORISED: ReadonlySet<string> = new Set(
   up([
     ...VERBS_CONTROL, ...VERBS, ...SCOPE_TERMINATORS, ...STRUCTURE, ...CLAUSES, ...USAGES,
     ...ENVIRONMENT, ...PHRASES, ...CONDITION_WORDS, ...FIGURATIVE, ...SPECIAL_REGISTERS,
@@ -149,23 +182,20 @@ export const ALL_KEYWORDS: ReadonlySet<string> = new Set(
   ])
 );
 
+/** reserved words (付録A) that none of the category lists above covers: plain keywords */
+export const RESERVED_OTHER: readonly string[] = RESERVED_WORDS.filter((w) => !CATEGORISED.has(w));
+
+/** every word highlighted as a keyword */
+export const ALL_KEYWORDS: ReadonlySet<string> = new Set([...CATEGORISED, ...RESERVED_OTHER]);
+
 /**
- * Words that may not be used as data names or paragraph names. Deliberately limited to
- * long-standing reserved words (COBOL 85 core); extension words are left out so the
- * check does not raise false alarms before the list is verified against the manual.
+ * Words that may not be used as data, paragraph, section or file names: the whole of
+ * 付録A that is reserved on Linux and the other platforms alike (1.2.2.1 rule 4). The few
+ * words that are reserved only on non-Linux platforms are left out to avoid false alarms.
  */
-export const RESERVED_FOR_NAMES: ReadonlySet<string> = new Set(
-  up([
-    ...VERBS_CONTROL.filter((w) => !['INVOKE', 'RAISE', 'RESUME', 'ENTRY'].includes(w)),
-    ...VERBS.filter((w) => w !== 'UNLOCK'), ...SCOPE_TERMINATORS.filter((w) => !['END-INVOKE', 'END-EXEC', 'END-ACCEPT', 'END-DISPLAY'].includes(w)),
-    'IDENTIFICATION', 'ENVIRONMENT', 'DATA', 'PROCEDURE', 'DIVISION', 'SECTION', 'FILE',
-    'WORKING-STORAGE', 'LINKAGE', 'DECLARATIVES', 'END', 'PROGRAM', 'FILLER', 'PIC',
-    'PICTURE', 'VALUE', 'VALUES', 'REDEFINES', 'RENAMES', 'OCCURS', 'USAGE', 'SIGN',
-    'INDEX', 'KEY', 'RECORD', 'TO', 'FROM', 'BY', 'INTO', 'GIVING', 'USING', 'OF', 'IN',
-    'ALL', 'AND', 'OR', 'NOT', 'IS', 'THAN', 'NUMERIC', 'INPUT', 'OUTPUT', 'I-O', 'TIMES',
-    'UNTIL', 'VARYING', 'THRU', 'THROUGH', 'WITH', 'NEXT', 'SENTENCE', 'RUN',
-    ...FIGURATIVE.filter((w) => !['NULL', 'NULLS'].includes(w)), ...ACCEPT_SOURCES
-  ])
-);
+export const RESERVED_FOR_NAMES: ReadonlySet<string> = new Set(RESERVED_WORDS);
+
+/** reserved only on platforms other than Linux; never reported by NC018 */
+export const NOT_RESERVED_ON_LINUX: ReadonlySet<string> = new Set(RESERVED_NOT_ON_LINUX);
 
 export const STATEMENT_START: ReadonlySet<string> = new Set(up([...VERBS_CONTROL, ...VERBS, 'EXEC', 'NEXT']));

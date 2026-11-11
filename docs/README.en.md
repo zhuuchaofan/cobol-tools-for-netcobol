@@ -43,13 +43,16 @@ Columns are counted in **Shift_JIS bytes (full-width = 2 columns)**, so lines co
 | NC015 | Error | Invalid literal content (`X"…"` hex digit pairs, `NX"…"` groups of four, `B"…"` only 0/1, `N"…"`/`NC"…"` full-width only) |
 | NC016 | Warning | Division / section header without a separator period |
 | NC017 | Warning | Invalid level number (not 01-49, 66, 77, 88) |
-| NC018 | Error | Reserved word used as a data, paragraph or file name |
+| NC018 | Error | Reserved word (appendix A) used as a data, paragraph, section or file name |
+| NC019 | Warning | Literal length out of range (character 1-160 bytes, `X` 2-320 digits, `NX` 4-320 digits, `N`/`NC` 1-80 characters, `B` 1-160 digits) |
+| NC020 | Warning | Malformed user-defined word (over 30 characters, `-`/`_` at either end, `__`, no letter, a Japanese word without kanji/kana). Mixing Japanese and ASCII is shown as information |
 
 Messages follow the VS Code display language (Japanese / English / Simplified Chinese).
 
 - Debugging lines (`D` in column 7) are treated as comments, shown dimmed and italic, unless `SOURCE-COMPUTER` has `WITH DEBUGGING MODE`
 - `@OPTIONS SRF(VAR)` switches to variable format (no column-72 margin); `SRF(FREE)` turns column checks off (or set `netcobol.sourceFormat`)
-- The reserved word and intrinsic function lists are based on the COBOL 85 standard plus common NetCOBOL extensions; they are still to be checked against the COBOL文法書
+- Reserved words, intrinsic functions, special registers and function-names follow the **NetCOBOL V10.5 COBOL文法書 (B1WD-1361-06Z0)**. Other versions may add or remove reserved words; if yours differ, turn `NC018` off and tell us
+- The full-width check of `N"…"` / `NC"…"` (NC015) assumes the Shift_JIS (non-Unicode) operating mode. For Unicode-mode programs turn it off in `netcobol.diagnostics.disabledRules`
 
 ### Renumber sequence area
 - Editor context menu, or Command Palette: "NetCOBOL: Renumber Sequence Area (columns 1-6)"
@@ -119,7 +122,7 @@ For UTF-8 sources set `files.encoding` to `utf8` and `netcobol.columnCounting` t
 - Fixed and variable format are supported; free format gets highlighting only (no column checks, no outline)
 - Shift_JIS width is "ASCII and half-width katakana = 1, everything else = 2"
 - Paragraph names written in area B are not checked (indistinguishable from multi-line statements)
-- Outline and go to definition use a simple line-based parser; the `REPLACE` statement is not taken into account
+- Outline and go to definition use a simple line-based parser; the `REPLACE` statement and `COPY … JOINING / DISJOINING` are not taken into account
 
 ## Feedback and contributing
 Report bugs and ideas in [Issues](https://github.com/zhuuchaofan/cobol-tools-for-netcobol/issues) (Japanese, English or Chinese).
