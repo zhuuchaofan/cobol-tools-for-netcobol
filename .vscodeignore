@@ -1,10 +1,15 @@
 .vscode/**
+.github/**
 src/**
 scripts/**
 test/**
+docs/**
 dist/**
-preview/**
+images/**
+!images/icon.png
 node_modules/**
 **/*.map
 tsconfig.json
+CONTRIBUTING.md
 .gitignore
+.gitattributes

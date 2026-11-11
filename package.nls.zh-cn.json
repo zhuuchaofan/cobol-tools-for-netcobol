@@ -1,5 +1,5 @@
 {
-  "ext.description": "NetCOBOL（固定形式）语法高亮与列位置/格式诊断，按 Shift_JIS 字节数计算列。",
+  "ext.description": "NetCOBOL（固定形式）非官方插件：语法高亮、按 Shift_JIS 字节的列检查、序号区重新编号、大纲、跳转定义。",
   "cmd.toggleLineComment": "切换注释行（第7列 '*'）",
   "cfg.columnCounting": "固定形式的列计算方式（序号区 1-6、指示区 7、A区 8-11、B区 12-72、标识区 73-80）。",
   "cfg.columnCounting.shiftjis": "Shift_JIS 字节：全角算 2 列，ASCII 与半角片假名算 1 列（与 Shift_JIS 源码下的 NetCOBOL 一致）。",

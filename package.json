@@ -1,10 +1,26 @@
 {
-  "name": "netcobol-support",
-  "displayName": "NetCOBOL Support",
+  "name": "cobol-tools-for-netcobol",
+  "displayName": "COBOL Tools for NetCOBOL",
   "description": "%ext.description%",
-  "version": "0.2.0",
-  "publisher": "local",
+  "version": "0.3.0",
+  "publisher": "zhuuchaofan",
+  "author": {
+    "name": "zhuuchaofan"
+  },
   "license": "MIT",
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#1B2B44",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhuuchaofan/cobol-tools-for-netcobol.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zhuuchaofan/cobol-tools-for-netcobol/issues"
+  },
+  "homepage": "https://github.com/zhuuchaofan/cobol-tools-for-netcobol#readme",
   "engines": {
     "vscode": "^1.75.0"
   },
@@ -15,8 +31,16 @@
   "keywords": [
     "NetCOBOL",
     "COBOL",
+    "Fujitsu",
     "Shift_JIS",
-    "固定形式"
+    "SJIS",
+    "fixed format",
+    "sequence number",
+    "legacy",
+    "mainframe",
+    "固定形式",
+    "一連番号",
+    "日本語"
   ],
   "main": "./out/extension.js",
   "l10n": "./l10n",
@@ -193,13 +217,15 @@
     "compile": "npm run build:grammar && tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "npm run compile && node test/run-tests.js",
-    "package": "npm run test && node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && vsce package --allow-missing-repository --out dist/netcobol-support-0.2.0.vsix",
-    "vscode:prepublish": "npm run compile"
+    "package": "npm run test && node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && vsce package --out dist/",
+    "vscode:prepublish": "npm run compile",
+    "release-notes": "node scripts/release-notes.js"
   },
   "devDependencies": {
     "@types/node": "^18.19.130",
     "@types/vscode": "1.75.0",
     "@vscode/vsce": "^4.1.0",
+    "ovsx": "^1.4.0",
     "typescript": "5.6",
     "vscode-oniguruma": "^2.0.1",
     "vscode-textmate": "^9.3.2"

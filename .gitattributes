@@ -1,0 +1,7 @@
+* text=auto eol=lf
+# COBOL samples are Shift_JIS + CRLF: never convert them
+*.cob -text
+*.cbl -text
+*.cpy -text
+*.pco -text
+*.png binary

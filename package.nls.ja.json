@@ -1,5 +1,5 @@
 {
-  "ext.description": "NetCOBOL（固定形式）の構文ハイライトと桁位置・書式チェック。Shift_JIS のバイト数で桁を数えます。",
+  "ext.description": "NetCOBOL（固定形式）向けの非公式拡張機能：構文ハイライト、Shift_JIS バイト基準の桁チェック、一連番号の振り直し、アウトライン、定義へ移動。",
   "cmd.toggleLineComment": "注記行の切り替え（7桁目 '*'）",
   "cfg.columnCounting": "固定形式の桁の数え方（一連番号 1〜6、標識 7、A領域 8〜11、B領域 12〜72、プログラム識別 73〜80）。",
   "cfg.columnCounting.shiftjis": "Shift_JIS バイト数：全角は2桁、ASCII・半角カナは1桁（Shift_JIS ソースの NetCOBOL と同じ）。",

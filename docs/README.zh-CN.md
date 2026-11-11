@@ -1,0 +1,104 @@
+# COBOL Tools for NetCOBOL
+
+[日本語](../README.md) | [English](README.en.md) | 简体中文
+
+面向 **NetCOBOL 固定形式源码**的 VS Code 插件。
+列位置按 **Shift_JIS 字节数（全角 = 2 列）** 计算，含日文的行也能和编译器按同样的列检查。
+
+> 本插件为**非官方**插件，与富士通株式会社无关。NetCOBOL 是富士通株式会社的注册商标。
+
+![语法高亮](../images/highlight.png)
+
+## 主要功能
+
+### 语法高亮
+- 序号区（1-6 列）/ 标识区（73-80 列）淡化显示（按字节计算，有全角也不会错位）
+- 第 7 列指示区：`*` `/` 注释行、`D` 调试行、`-` 继续行
+- DIVISION / SECTION / 段落名（支持日文段落名）、`PERFORM` / `GO TO` 目标
+- 层号、数据名（支持日文）、`PIC` 字符串、`COMP-3` 等用法
+- NetCOBOL 字面量：`NC"…"` `N"…"` `NX"…"` `X"…"` `B"…"`
+- `@OPTIONS`、`*>` 浮动注释、`EXEC SQL … END-EXEC`（主变量 `:WS-X`）
+- `SYSERR` / `CONSOLE` / `ARGUMENT-VALUE` / `ENVIRONMENT-VALUE` 等功能名、特殊寄存器、`FUNCTION xxx`
+
+### 格式诊断（问题面板）
+
+![格式诊断](../images/diagnostics.png)
+
+| 代码 | 级别 | 内容 |
+|---|---|---|
+| NC001 | 错误 | 第 7 列（指示区）字符非法（只允许 空格 `*` `/` `-` `D`） |
+| NC002 | 错误 | 全角字符跨在 6/7、7/8、72/73 列边界上（72/73 在注释里不检查） |
+| NC003 | 警告 | 代码超出第 72 列（注释里不检查） |
+| NC004 | 警告 | 行长超过 80 列（可配置） |
+| NC005 | 警告 | DIVISION / SECTION / 段落头 / FD / 01 / 77 没有从 A 区（8-11 列）开始 |
+| NC006 | 警告 | PROCEDURE DIVISION 中语句（MOVE、IF…）写在了 A 区 |
+| NC007 | 错误 | 字符常量到第 72 列仍未闭合，且下一行不是继续行 |
+| NC008 | 错误 | 继续行没有以引号重新开始被继续的字符常量 |
+| NC009 | 警告 | 常量/注释之外的全角空格 |
+| NC010 | 警告 | Tab 字符（列位置可能与编译器不一致） |
+| NC011 | 警告 | 继续行的 A 区不是空白 |
+| NC012 | 信息 | 序号区为空（连续的行合并成一条） |
+| NC013 | 信息 | 序号区不是 6 位数字 |
+| NC014 | 信息 | 序号没有比上一行大 |
+
+提示信息跟随 VS Code 显示语言（日本語 / English / 简体中文）。
+
+### 序号区重新编号
+- 编辑器右键菜单，或命令面板「NetCOBOL: 序号区（第1-6列）重新编号」
+- 没有选中：整个文件从 `000010` 开始，每行 +10（空行也编号；文件末尾换行后的空行不动）
+- 有选中：只处理选中的行，接着上方最近的有效序号继续
+- NC012–NC014 的灯泡（`Ctrl+.`）也能一键执行
+- 起始值、步长可在 `netcobol.sequence.start` / `netcobol.sequence.step` 修改；`Ctrl+Z` 一步撤销
+
+### 其他
+- `Ctrl+/`（Mac 为 `Cmd+/`）：在第 7 列切换 `*` 注释
+- NetCOBOL 文件默认：`files.encoding = shiftjis`、标尺 `6, 7, 11, 72`、关闭行尾空白自动删除
+
+## 安装
+
+在扩展视图搜索 **「COBOL Tools for NetCOBOL」** 安装。
+VSCodium、Cursor 等请从 [Open VSX](https://open-vsx.org/extension/zhuuchaofan/cobol-tools-for-netcobol) 安装；离线环境请下载 [Releases](https://github.com/zhuuchaofan/cobol-tools-for-netcobol/releases) 里的 `.vsix`，用「从 VSIX 安装…」。
+
+### 团队使用
+在项目仓库里放一个 `.vscode/extensions.json`，同事打开项目时 VS Code 会提示安装：
+
+```json
+{
+  "recommendations": ["zhuuchaofan.cobol-tools-for-netcobol"]
+}
+```
+
+### 与其他 COBOL 插件共存
+同一扩展名可能被其他插件接管。把右下角语言模式切换为 **NetCOBOL**，或在 `settings.json` 指定：
+
+```json
+"files.associations": { "*.cob": "netcobol", "*.cbl": "netcobol", "*.cpy": "netcobol" }
+```
+
+对应扩展名：`.cob` `.cbl` `.cobol` `.cpy` `.pco`
+
+## 设置
+
+| 设置项 | 默认值 | 说明 |
+|---|---|---|
+| `netcobol.columnCounting` | `shiftjis` | 列计算方式：`shiftjis` / `utf8` / `character` |
+| `netcobol.diagnostics.enabled` | `true` | 启用诊断 |
+| `netcobol.diagnostics.maxLineLength` | `80` | 行长上限（0 为不检查） |
+| `netcobol.diagnostics.disabledRules` | `[]` | 关闭指定规则，例如 `["NC010", "NC012"]` |
+| `netcobol.dimFixedAreas` | `true` | 淡化序号区与标识区 |
+| `netcobol.sequence.start` | `10` | 序号起始值 |
+| `netcobol.sequence.step` | `10` | 序号步长 |
+
+UTF-8 源码：把 `files.encoding` 改为 `utf8`，`netcobol.columnCounting` 设为 `utf8`。
+
+## 限制
+- 只支持固定形式；可变形式 / 自由形式源码的列检查会不准（可关闭诊断）
+- Shift_JIS 宽度按「ASCII・半角片假名 = 1，其余 = 2」计算
+- 不检查写在 B 区的段落名（与跨行语句难以区分）
+
+## 反馈与贡献
+问题和需求请提交到 [Issues](https://github.com/zhuuchaofan/cobol-tools-for-netcobol/issues)（日本語・English・中文均可）。
+**请不要贴客户源码或设计书**，复现请自己写最小示例。开发方法见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
+
+## 许可证
+[MIT](../LICENSE)
