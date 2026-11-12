@@ -114,7 +114,7 @@ function toDiagnostic(r: RawDiagnostic): vscode.Diagnostic {
   return d;
 }
 
-function message(code: RuleCode, a: string[]): string {
+export function message(code: RuleCode, a: string[]): string {
   switch (code) {
     case 'NC001':
       return vscode.l10n.t('Invalid character "{0}" in the indicator area (column 7). Use space, *, /, - or D.', a[0]);

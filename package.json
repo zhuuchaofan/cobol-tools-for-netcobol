@@ -267,7 +267,9 @@
     "test": "npm run compile && node test/run-tests.js",
     "package": "npm run test && node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && vsce package --out dist/",
     "vscode:prepublish": "npm run compile",
-    "release-notes": "node scripts/release-notes.js"
+    "release-notes": "node scripts/release-notes.js",
+    "screenshots": "npm run compile && node scripts/screenshots/render.js",
+    "icon": "node scripts/screenshots/icon.js"
   },
   "devDependencies": {
     "@types/node": "^18.19.130",

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+- アイコンを一新（固定形式の桁構成：一連番号・標識・A/B 領域・72 桁目をモチーフに）
+- README を刷新：特長の要約と、機能ごとのスクリーンショット（日本語・English・简体中文）を追加。チェック項目の一覧は折りたたみ表示に
+- スクリーンショットとアイコンを `npm run screenshots` / `npm run icon` で再生成できるように
+
 ## 0.5.0
 - 富士通 NetCOBOL V10.5 COBOL文法書（B1WD-1361-06Z0）と突き合わせて語表を修正
   - 予約語は付録A の全 620 語（Linux を含む全プラットフォームで予約されるもの）に差し替え。以前は主要な語だけだったため、`UPDATE` `FORMAT` `TITLE` `DEFAULT` `LEFT` `RIGHT` `PREVIOUS` `EXAMINE` などを名前に使っても気づけなかった

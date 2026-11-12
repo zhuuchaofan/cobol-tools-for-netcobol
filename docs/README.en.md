@@ -2,16 +2,24 @@
 
 [日本語](../README.md) | English | [简体中文](README.zh-CN.md)
 
-A VS Code extension for **NetCOBOL fixed-format source**.
-Columns are counted in **Shift_JIS bytes (full-width = 2 columns)**, so lines containing Japanese are checked at the same columns the compiler uses.
+A VS Code extension for reading and writing **NetCOBOL fixed-format source**.
+
+![Columns are counted in Shift_JIS bytes](../images/en/columns.png)
+
+- **Columns that match the compiler** — counted in **Shift_JIS bytes (full-width = 2 columns)**, so column 72 and area A are checked correctly even on lines with Japanese text
+- **20 format checks** — indicator area, area A/B, text past column 72, unclosed literals, reserved words used as names and more, shown in the Problems panel before you compile
+- **Renumber the sequence area** — blank, duplicate or out-of-order numbers become `000010, 000020, …` with one `Ctrl+.`
+- **Outline and go to definition** — divisions, sections, paragraphs and data items as a tree; `F12` follows names into `COPY`ed copybooks
+- **Japanese, English and Simplified Chinese** — messages follow the VS Code display language
 
 > This is an **unofficial** extension and is not affiliated with Fujitsu Limited. NetCOBOL is a registered trademark of Fujitsu Limited.
-
-![Syntax highlighting](../images/highlight.png)
 
 ## Features
 
 ### Syntax highlighting
+
+![Syntax highlighting and outline](../images/en/highlight.png)
+
 - Sequence area (columns 1-6) and identification area (73-80) are dimmed, byte-accurately
 - Indicator area (column 7): `*` `/` comment lines, `D` debug lines, `-` continuation lines
 - Divisions, sections, paragraphs (Japanese names supported), `PERFORM` / `GO TO` targets
@@ -22,7 +30,10 @@ Columns are counted in **Shift_JIS bytes (full-width = 2 columns)**, so lines co
 
 ### Format checks (Problems panel)
 
-![Format checks](../images/diagnostics.png)
+![Format checks](../images/en/diagnostics.png)
+
+<details>
+<summary><b>All checks (NC001-NC020)</b></summary>
 
 | Code | Severity | Check |
 |---|---|---|
@@ -47,6 +58,8 @@ Columns are counted in **Shift_JIS bytes (full-width = 2 columns)**, so lines co
 | NC019 | Warning | Literal length out of range (character 1-160 bytes, `X` 2-320 digits, `NX` 4-320 digits, `N`/`NC` 1-80 characters, `B` 1-160 digits) |
 | NC020 | Warning | Malformed user-defined word (over 30 characters, `-`/`_` at either end, `__`, no letter, a Japanese word without kanji/kana). Mixing Japanese and ASCII is shown as information |
 
+</details>
+
 Messages follow the VS Code display language (Japanese / English / Simplified Chinese).
 
 - Debugging lines (`D` in column 7) are treated as comments, shown dimmed and italic, unless `SOURCE-COMPUTER` has `WITH DEBUGGING MODE`
@@ -55,6 +68,9 @@ Messages follow the VS Code display language (Japanese / English / Simplified Ch
 - The full-width check of `N"…"` / `NC"…"` (NC015) assumes the Shift_JIS (non-Unicode) operating mode. For Unicode-mode programs turn it off in `netcobol.diagnostics.disabledRules`
 
 ### Renumber sequence area
+
+![Renumber sequence area](../images/en/renumber.png)
+
 - Editor context menu, or Command Palette: "NetCOBOL: Renumber Sequence Area (columns 1-6)"
 - No selection: the whole file from `000010` in steps of 10 (empty lines are numbered too; the empty line after the final newline is left alone)
 - With a selection: only the selected lines, continuing from the nearest valid number above
@@ -62,6 +78,9 @@ Messages follow the VS Code display language (Japanese / English / Simplified Ch
 - Start and step: `netcobol.sequence.start` / `netcobol.sequence.step`. One `Ctrl+Z` undoes it
 
 ### Outline, folding, go to definition
+
+![Peek definition inside a copybook](../images/en/definition.png)
+
 - **Outline** (Outline view, `Ctrl+Shift+O`, breadcrumbs): program → divisions → sections → paragraphs; the data division as FD → 01 → 05 … → 88 with `PIC` shown
 - **Folding**: divisions, sections, paragraphs, group items, runs of comment lines, `EXEC SQL` blocks
 - **Go to definition** (`F12` / `Ctrl+Click`): paragraphs, sections, data names, file names; when not found in the file, the copybooks it `COPY`s are searched too (up to 3 levels). Qualification (`A OF B`) and `COPY … REPLACING ==:PRE:== BY ==WS==` are taken into account

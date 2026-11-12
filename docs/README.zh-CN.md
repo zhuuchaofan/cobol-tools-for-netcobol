@@ -3,15 +3,23 @@
 [日本語](../README.md) | [English](README.en.md) | 简体中文
 
 面向 **NetCOBOL 固定形式源码**的 VS Code 插件。
-列位置按 **Shift_JIS 字节数（全角 = 2 列）** 计算，含日文的行也能和编译器按同样的列检查。
+
+![按 Shift_JIS 字节数计算列位置](../images/zh-cn/columns.png)
+
+- **列位置不错位** — 按 **Shift_JIS 字节数（全角 = 2 列）** 计算，含日文的行也能和编译器一样判断第 72 列和 A 区
+- **20 种格式诊断** — 指示区、A/B 区、超出第 72 列、未闭合的字符常量、误用保留字等，编译前就显示在问题面板
+- **序号区一键重新编号** — 空白、重复、倒序的序号，`Ctrl+.` 一下变成 `000010, 000020, …`
+- **大纲与跳转定义** — DIVISION / SECTION / 段落 / 数据项层级显示，`F12` 可以一直跳进 `COPY` 的 copybook
+- **日本語・English・简体中文** — 提示信息跟随 VS Code 显示语言
 
 > 本插件为**非官方**插件，与富士通株式会社无关。NetCOBOL 是富士通株式会社的注册商标。
-
-![语法高亮](../images/highlight.png)
 
 ## 主要功能
 
 ### 语法高亮
+
+![语法高亮与大纲](../images/zh-cn/highlight.png)
+
 - 序号区（1-6 列）/ 标识区（73-80 列）淡化显示（按字节计算，有全角也不会错位）
 - 第 7 列指示区：`*` `/` 注释行、`D` 调试行、`-` 继续行
 - DIVISION / SECTION / 段落名（支持日文段落名）、`PERFORM` / `GO TO` 目标
@@ -22,7 +30,10 @@
 
 ### 格式诊断（问题面板）
 
-![格式诊断](../images/diagnostics.png)
+![格式诊断](../images/zh-cn/diagnostics.png)
+
+<details>
+<summary><b>全部诊断规则（NC001–NC020）</b></summary>
 
 | 代码 | 级别 | 内容 |
 |---|---|---|
@@ -47,6 +58,8 @@
 | NC019 | 警告 | 常量长度超出范围（字符常量 1-160 字节，`X` 2-320 位，`NX` 4-320 位，`N`/`NC` 1-80 字，`B` 1-160 位） |
 | NC020 | 警告 | 用户定义名形式不合法（超过 30 个字符、首尾是 `-` `_`、含 `__`、不含字母、日文名不含汉字/假名）。日文与半角英数混用显示为提示 |
 
+</details>
+
 提示信息跟随 VS Code 显示语言（日本語 / English / 简体中文）。
 
 - 第 7 列为 `D` 的调试行：`SOURCE-COMPUTER` 没写 `WITH DEBUGGING MODE` 时按注释行处理，并以斜体淡化显示
@@ -55,6 +68,9 @@
 - `N"…"` / `NC"…"` 的全角检查（NC015）以 Shift_JIS（非 Unicode 运行模式）为前提。Unicode 模式的程序请在 `netcobol.diagnostics.disabledRules` 中关闭
 
 ### 序号区重新编号
+
+![序号区重新编号](../images/zh-cn/renumber.png)
+
 - 编辑器右键菜单，或命令面板「NetCOBOL: 序号区（第1-6列）重新编号」
 - 没有选中：整个文件从 `000010` 开始，每行 +10（空行也编号；文件末尾换行后的空行不动）
 - 有选中：只处理选中的行，接着上方最近的有效序号继续
@@ -62,6 +78,9 @@
 - 起始值、步长可在 `netcobol.sequence.start` / `netcobol.sequence.step` 修改；`Ctrl+Z` 一步撤销
 
 ### 大纲、折叠、跳转定义
+
+![在 copybook 中速览定义](../images/zh-cn/definition.png)
+
 - **大纲**（资源管理器的大纲视图、`Ctrl+Shift+O`、面包屑）：程序 → DIVISION → SECTION → 段落；数据部按 FD → 01 → 05 … → 88 层级显示，并附带 `PIC`
 - **折叠**：DIVISION、SECTION、段落、组项目、连续注释行、`EXEC SQL` 块
 - **跳转定义**（`F12` / `Ctrl+点击`）：段落名、SECTION 名、数据名、文件名；当前文件找不到时，会继续在 `COPY` 进来的 copybook 里找（最多 3 层）。支持 `A OF B` 限定名和 `COPY … REPLACING ==:PRE:== BY ==WS==` 替换
