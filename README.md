@@ -96,6 +96,14 @@
 "netcobol.copybook.paths": ["copylib", "${workspaceFolder}/common/copy"]
 ```
 
+### データ項目のバイト数
+
+- データ名（定義・参照のどちらでも）にマウスを載せると、集団項目・基本項目のバイト数を表示します（`OCCURS` は 1 回分と回数も）
+- コマンド `NetCOBOL: データ項目の配置（位置とバイト数）を表示`、またはホバー内の「配置を表示」で、配下の項目の開始位置・終了位置・バイト数を一覧にします（`REDEFINES` は同じ位置から）
+- 計算するもの：`X` `A` `9` `S` `V`、編集項目、`SIGN … SEPARATE`、`N`（1 文字 2 バイトで計算）、`COMP` / `BINARY` / `COMP-5`（1〜4 桁 2、5〜9 桁 4、10〜18 桁 8）、`COMP-3`、`COMP-1` / `COMP-2`、`OCCURS n`、`REDEFINES`
+- 確定できないものは数字を出さず「未計算」と理由を表示します：`SYNCHRONIZED`（二進項目など）、`OCCURS … DEPENDING ON`、`INDEX` / `POINTER`、`P` を含む `PIC`、`COPY` の中身を含む集団項目
+
+
 ### その他
 - `Ctrl+/`（Mac は `Cmd+/`）：7桁目の `*` で注記行を切り替え
 - NetCOBOL ファイルの既定値：`files.encoding = shiftjis`、ルーラー `6, 7, 11, 72`、行末空白の自動削除オフ

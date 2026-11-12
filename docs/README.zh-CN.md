@@ -93,6 +93,14 @@
 "netcobol.copybook.paths": ["copylib", "${workspaceFolder}/common/copy"]
 ```
 
+### 数据项字节数
+
+- 鼠标悬停在数据名上（定义处或引用处都可以），显示组项目或基本项目的字节数（`OCCURS` 会显示单次长度和次数）
+- 命令 `NetCOBOL: 显示数据项布局（偏移与字节数）`，或悬停提示里的"显示布局"，列出其下每个项目的起始位置、结束位置和字节数（`REDEFINES` 从同一位置开始）
+- 会计算：`X` `A` `9` `S` `V`、编辑型项目、`SIGN … SEPARATE`、`N`（按每字符 2 字节）、`COMP` / `BINARY` / `COMP-5`（1-4 位 2 字节，5-9 位 4 字节，10-18 位 8 字节）、`COMP-3`、`COMP-1` / `COMP-2`、`OCCURS n`、`REDEFINES`
+- 无法确定的不给数字，显示"未计算"和原因：`SYNCHRONIZED`（二进制项目等）、`OCCURS … DEPENDING ON`、`INDEX` / `POINTER`、含 `P` 的 `PIC`、包含 `COPY` 的组项目
+
+
 ### 其他
 - `Ctrl+/`（Mac 为 `Cmd+/`）：在第 7 列切换 `*` 注释
 - NetCOBOL 文件默认：`files.encoding = shiftjis`、标尺 `6, 7, 11, 72`、关闭行尾空白自动删除

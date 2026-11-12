@@ -83,6 +83,11 @@
         "command": "netcobol.renumberSequence",
         "title": "%cmd.renumberSequence%",
         "category": "NetCOBOL"
+      },
+      {
+        "command": "netcobol.showDataLayout",
+        "title": "%cmd.showDataLayout%",
+        "category": "NetCOBOL"
       }
     ],
     "keybindings": [
@@ -255,6 +260,10 @@
         },
         {
           "command": "netcobol.toggleLineComment",
+          "when": "editorLangId == netcobol"
+        },
+        {
+          "command": "netcobol.showDataLayout",
           "when": "editorLangId == netcobol"
         }
       ]

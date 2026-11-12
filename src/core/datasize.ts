@@ -44,6 +44,8 @@ export interface SizeRow {
   reason?: string;
   /** name of the item this entry REDEFINES */
   redefines?: string;
+  /** the size uses the assumption "one PIC N character = 2 bytes" (not stated in the manual) */
+  national?: boolean;
 }
 
 interface Measured {
@@ -224,7 +226,10 @@ function measure(
   if (pic.national > 0) {
     if (pic.national !== pic.chars.length) why = 'PIC';
     else if (usage && usage !== 'DISPLAY' && usage !== 'NATIONAL') why = usage;
-    else unit = pic.national * NATIONAL_BYTES;
+    else {
+      unit = pic.national * NATIONAL_BYTES;
+      row.national = true;
+    }
   } else if (usage === 'COMP-3' || usage === 'PACKED-DECIMAL') {
     if (!pic.numeric || pic.digits < 1) why = 'PIC';
     else unit = Math.floor(pic.digits / 2) + 1;

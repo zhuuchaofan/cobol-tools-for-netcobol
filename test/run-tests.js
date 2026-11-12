@@ -552,6 +552,10 @@ const codesAt = (diags) => diags.map((d) => `${d.line + 1}:${d.code}`).sort();
     await test('N is 2 bytes per character (Shift_JIS)', () => {
       assert.strictEqual(bytes([' 01  A PIC N(10).'], 'A', OPT).bytes, 20);
     });
+    await test('rows that rely on the 2-bytes-per-N assumption are flagged', () => {
+      const rows = layout(find([' 01  R.', '     05  A PIC X(2).', '     05  B PIC N(3).'], 'R'), OPT);
+      assert.deepStrictEqual(rows.map((r) => !!r.national), [false, false, true]);
+    });
     await test('COMP-3 / PACKED-DECIMAL: digits/2 + 1', () => {
       assert.strictEqual(bytes([' 01  A PIC S9(9)V99 COMP-3.'], 'A', OPT).bytes, 6);
       assert.strictEqual(bytes([' 01  A PIC 9(4) COMP-3.'], 'A', OPT).bytes, 3);

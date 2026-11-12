@@ -1,11 +1,12 @@
 /**
- * Outline, folding and go to definition (incl. COPY → copybook).
+ * Outline, folding, go to definition (incl. COPY → copybook) and data item sizes.
  */
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ColumnMode } from './core/columns';
 import { DEFAULT_COPY_EXTENSIONS, matchDir, matchEntry } from './core/copybook';
 import { FormatSetting, detectFormat } from './core/format';
+import { DEFAULT_SIZE_OPTIONS, SizeRow, layout } from './core/datasize';
 import { CopyRef, Span, StructNode, Structure, copyAt, namesBeforeReplacing, parseStructure, qualify } from './core/structure';
 import { WORD, WORD_RE } from './core/words';
 
@@ -197,6 +198,98 @@ class DefinitionProvider implements vscode.DefinitionProvider {
   }
 }
 
+// ------------------------------------------------------------------ data item sizes
+const SHOW_LAYOUT = 'netcobol.showDataLayout';
+
+/** Data items that occupy storage (not 88 condition names or 66 RENAMES). */
+const isStorageItem = (n: StructNode): boolean => n.kind === 'data' && n.level !== 88 && n.level !== 66;
+
+/** The innermost storage item whose lines include `line`. */
+function dataNodeAtLine(s: Structure, line: number): StructNode | undefined {
+  let best: StructNode | undefined;
+  const walk = (list: StructNode[]) => {
+    for (const n of list) {
+      if (n.startLine <= line && line <= n.endLine) {
+        if (isStorageItem(n)) best = n;
+        walk(n.children);
+      }
+    }
+  };
+  walk(s.roots);
+  return best;
+}
+
+function sizeText(rows: SizeRow[]): string {
+  const top = rows[0];
+  if (top.bytes === undefined) {
+    return vscode.l10n.t('size not computed: {0}', top.reason ?? '');
+  }
+  const bytes = vscode.l10n.t('{0} bytes', top.bytes);
+  return top.occurs > 1 ? `${bytes} (${vscode.l10n.t('{0} bytes × {1} occurrences', top.unit ?? 0, top.occurs)})` : bytes;
+}
+
+class SizeHoverProvider implements vscode.HoverProvider {
+  provideHover(doc: vscode.TextDocument, pos: vscode.Position): vscode.Hover | undefined {
+    const s = structureOf(doc);
+    // the name (or level number of a FILLER) in a definition, or a reference with exactly one definition
+    let node: StructNode | undefined;
+    let range: vscode.Range | undefined;
+    const own = dataNodeAtLine(s, pos.line);
+    if (own && own.startLine === pos.line && toRange(own.nameSpan).contains(pos)) {
+      node = own;
+      range = toRange(own.nameSpan);
+    } else {
+      const wr = doc.getWordRangeAtPosition(pos, WORD_RE);
+      if (!wr) return undefined;
+      const defs = (s.definitions.get(doc.getText(wr).toUpperCase()) ?? []).filter(isStorageItem);
+      if (defs.length !== 1) return undefined;
+      node = defs[0];
+      range = wr;
+    }
+    const rows = layout(node, DEFAULT_SIZE_OPTIONS);
+    const md = new vscode.MarkdownString(undefined, true);
+    md.isTrusted = { enabledCommands: [SHOW_LAYOUT] };
+    md.appendMarkdown(`**${node.label.replace(/^\d+\s+/, '')}** — ${sizeText(rows)}`);
+    if (rows.some((r) => r.national)) md.appendMarkdown(`\n\n_${vscode.l10n.t('PIC N is counted as 2 bytes per character (Shift_JIS).')}_`);
+    if (rows.length > 1) {
+      const arg = encodeURIComponent(JSON.stringify([{ line: node.startLine }]));
+      md.appendMarkdown(`\n\n[${vscode.l10n.t('Show layout')}](command:${SHOW_LAYOUT}?${arg})`);
+    }
+    return new vscode.Hover(md, range);
+  }
+}
+
+/** Offsets and lengths of an item and everything below it, in a read-only text document. */
+async function showDataLayout(...args: unknown[]): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor || editor.document.languageId !== LANG) return;
+  const doc = editor.document;
+  const a = args[0] as { line?: number } | undefined;
+  const line = typeof a?.line === 'number' ? a.line : editor.selection.active.line;
+  const node = dataNodeAtLine(structureOf(doc), line);
+  if (!node) {
+    void vscode.window.showInformationMessage(vscode.l10n.t('Put the cursor on a data item (DATA DIVISION) first.'));
+    return;
+  }
+  const rows = layout(node, DEFAULT_SIZE_OPTIONS);
+  const num = (n: number | undefined, w: number) => (n === undefined ? '?' : String(n)).padStart(w);
+  const head = `${rows[0].node.label.replace(/^\d+\s+/, '')} — ${sizeText(rows)}`;
+  const out: string[] = [head, '', `${'Start'.padStart(7)} ${'End'.padStart(7)} ${'Bytes'.padStart(7)}  ${vscode.l10n.t('Item')}`];
+  for (const r of rows) {
+    const start = r.offset === undefined ? undefined : r.offset + 1;
+    const end = r.offset === undefined || r.bytes === undefined ? undefined : r.offset + r.bytes;
+    const pic = r.node.detail && r.node.level !== 88 ? `  ${r.node.detail}` : '';
+    const note = r.bytes === undefined && r.reason ? `  [${vscode.l10n.t('not computed: {0}', r.reason)}]` : '';
+    const occ = r.occurs > 1 ? `  OCCURS ${r.occurs}` : '';
+    const red = r.redefines ? `  REDEFINES ${r.redefines}` : '';
+    out.push(`${num(start, 7)} ${num(end, 7)} ${num(r.bytes, 7)}  ${'  '.repeat(r.depth)}${r.node.label}${pic}${occ}${red}${note}`);
+  }
+  if (rows.some((r) => r.national)) out.push('', vscode.l10n.t('PIC N is counted as 2 bytes per character (Shift_JIS).'));
+  out.push(vscode.l10n.t('Start/End are 1-based byte positions from the start of the item. "?" = not computed.'));
+  const d = await vscode.workspace.openTextDocument({ content: out.join('\n'), language: 'plaintext' });
+  await vscode.window.showTextDocument(d, { viewColumn: vscode.ViewColumn.Beside, preview: true, preserveFocus: true });
+}
+
 // ------------------------------------------------------------------ registration
 export function registerLanguageFeatures(context: vscode.ExtensionContext): void {
   const selector: vscode.DocumentSelector = { language: LANG };
@@ -204,6 +297,8 @@ export function registerLanguageFeatures(context: vscode.ExtensionContext): void
     vscode.languages.registerDocumentSymbolProvider(selector, new OutlineProvider(), { label: 'NetCOBOL' }),
     vscode.languages.registerFoldingRangeProvider(selector, new FoldingProvider()),
     vscode.languages.registerDefinitionProvider(selector, new DefinitionProvider()),
+    vscode.languages.registerHoverProvider(selector, new SizeHoverProvider()),
+    vscode.commands.registerCommand(SHOW_LAYOUT, showDataLayout),
     vscode.workspace.onDidCloseTextDocument((d) => cache.delete(d.uri.toString()))
   );
 }

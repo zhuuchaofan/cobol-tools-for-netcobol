@@ -10,6 +10,7 @@
   "cfg.diagnostics.disabledRules": "無効にするルールコード（例: [\"NC010\"]）。",
   "cfg.dimFixedAreas": "一連番号領域（1〜6桁）とプログラム識別領域（73〜80桁）を薄く表示する。",
   "cmd.renumberSequence": "一連番号（1〜6桁）の振り直し",
+  "cmd.showDataLayout": "データ項目の配置（位置とバイト数）を表示",
   "cfg.sequence.start": "一連番号を振り直すときの開始番号。",
   "cfg.sequence.step": "一連番号を振り直すときの増分。",
   "cfg.copybook.paths": "登録集原文（`COPY 名前`）を探すフォルダー。編集中のファイルと同じフォルダーの次に検索します。相対パスはワークスペースフォルダー基準、`${workspaceFolder}` も使えます。`COPY 名前 OF ライブラリ` の場合は `ライブラリ` という名前のサブフォルダーも探します。",

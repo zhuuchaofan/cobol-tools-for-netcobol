@@ -93,6 +93,14 @@ Messages follow the VS Code display language (Japanese / English / Simplified Ch
 "netcobol.copybook.paths": ["copylib", "${workspaceFolder}/common/copy"]
 ```
 
+### Data item sizes
+
+- Hover a data name (at its definition or a reference) to see the byte size of a group or elementary item (for `OCCURS`: one occurrence and the count)
+- The command `NetCOBOL: Show Data Item Layout (offsets and sizes)`, or "Show layout" in the hover, lists start, end and size of every item below it (`REDEFINES` starts at the same position)
+- Computed: `X` `A` `9` `S` `V`, edited items, `SIGN … SEPARATE`, `N` (2 bytes per character), `COMP` / `BINARY` / `COMP-5` (1-4 digits 2, 5-9 digits 4, 10-18 digits 8), `COMP-3`, `COMP-1` / `COMP-2`, `OCCURS n`, `REDEFINES`
+- Anything that cannot be determined is shown as "not computed" with the reason instead of a number: `SYNCHRONIZED` (on binary items etc.), `OCCURS … DEPENDING ON`, `INDEX` / `POINTER`, `PIC` with `P`, groups that contain a `COPY`
+
+
 ### Other
 - `Ctrl+/` (`Cmd+/` on Mac) toggles a `*` comment in column 7
 - Defaults for NetCOBOL files: `files.encoding = shiftjis`, rulers at `6, 7, 11, 72`, trailing whitespace trimming off

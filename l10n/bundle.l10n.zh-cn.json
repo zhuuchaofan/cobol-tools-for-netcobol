@@ -35,5 +35,14 @@
   "\"{0}\" contains consecutive underscores.": "“{0}”含有连续的下划线。",
   "\"{0}\" must contain at least one letter.": "“{0}”至少要包含一个英文字母。",
   "\"{0}\" mixes Japanese and ASCII characters; a Japanese user-defined word must consist of Japanese characters only.": "“{0}”混用了日文字符和半角英数；日文用户定义名必须全部由日文字符组成。",
-  "\"{0}\" needs at least one kanji, hiragana, katakana or prolonged sound mark (ー).": "“{0}”至少要包含一个汉字、平假名、片假名或长音符（ー）。"
+  "\"{0}\" needs at least one kanji, hiragana, katakana or prolonged sound mark (ー).": "“{0}”至少要包含一个汉字、平假名、片假名或长音符（ー）。",
+  "size not computed: {0}": "未计算字节数：{0}",
+  "{0} bytes": "{0} 字节",
+  "{0} bytes × {1} occurrences": "{0} 字节 × {1} 次",
+  "PIC N is counted as 2 bytes per character (Shift_JIS).": "PIC N 按每字符 2 字节计算（Shift_JIS）。",
+  "Show layout": "显示布局",
+  "Put the cursor on a data item (DATA DIVISION) first.": "请先把光标放在数据项（DATA DIVISION）上。",
+  "Item": "项目",
+  "not computed: {0}": "未计算：{0}",
+  "Start/End are 1-based byte positions from the start of the item. \"?\" = not computed.": "Start/End 是相对项目起点、从 1 开始的字节位置。“?”表示未计算。"
 }

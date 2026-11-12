@@ -35,5 +35,14 @@
   "\"{0}\" contains consecutive underscores.": "「{0}」にアンダースコアが連続しています。",
   "\"{0}\" must contain at least one letter.": "「{0}」には英字を1文字以上含める必要があります。",
   "\"{0}\" mixes Japanese and ASCII characters; a Japanese user-defined word must consist of Japanese characters only.": "「{0}」は日本語文字と英数字が混在しています。日本語利用者語は日本語文字だけで構成します。",
-  "\"{0}\" needs at least one kanji, hiragana, katakana or prolonged sound mark (ー).": "「{0}」には漢字・ひらがな・カタカナ・長音記号（ー）のいずれかを1文字以上含める必要があります。"
+  "\"{0}\" needs at least one kanji, hiragana, katakana or prolonged sound mark (ー).": "「{0}」には漢字・ひらがな・カタカナ・長音記号（ー）のいずれかを1文字以上含める必要があります。",
+  "size not computed: {0}": "バイト数は未計算：{0}",
+  "{0} bytes": "{0} バイト",
+  "{0} bytes × {1} occurrences": "{0} バイト × {1} 回",
+  "PIC N is counted as 2 bytes per character (Shift_JIS).": "PIC N は 1 文字 2 バイトで計算しています（Shift_JIS）。",
+  "Show layout": "配置を表示",
+  "Put the cursor on a data item (DATA DIVISION) first.": "先にカーソルをデータ項目（DATA DIVISION）に置いてください。",
+  "Item": "項目",
+  "not computed: {0}": "未計算：{0}",
+  "Start/End are 1-based byte positions from the start of the item. \"?\" = not computed.": "開始・終了は項目の先頭からの 1 起点のバイト位置です。「?」は未計算を表します。"
 }

@@ -10,6 +10,7 @@
   "cfg.diagnostics.disabledRules": "要关闭的规则代码，例如 [\"NC010\"]。",
   "cfg.dimFixedAreas": "淡化显示序号区（1-6 列）与标识区（73-80 列）。",
   "cmd.renumberSequence": "序号区（第1-6列）重新编号",
+  "cmd.showDataLayout": "显示数据项布局（偏移与字节数）",
   "cfg.sequence.start": "序号区重新编号时的起始值。",
   "cfg.sequence.step": "序号区重新编号时的步长。",
   "cfg.copybook.paths": "查找 copybook（`COPY 名称`）的文件夹，在当前文件所在文件夹之后搜索。相对路径以工作区文件夹为基准，支持 `${workspaceFolder}`。`COPY 名称 OF 库名` 时还会查找名为该库名的子文件夹。",
