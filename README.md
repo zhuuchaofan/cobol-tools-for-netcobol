@@ -1,7 +1,6 @@
 # COBOL Tools for NetCOBOL
 
-[![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/zhuuchaofan.cobol-tools-for-netcobol?label=Marketplace)](https://marketplace.visualstudio.com/items?itemName=zhuuchaofan.cobol-tools-for-netcobol)
-[![Open VSX](https://img.shields.io/open-vsx/v/zhuuchaofan/cobol-tools-for-netcobol?label=Open%20VSX)](https://open-vsx.org/extension/zhuuchaofan/cobol-tools-for-netcobol)
+[![Visual Studio Marketplace](https://img.shields.io/github/v/release/zhuuchaofan/cobol-tools-for-netcobol?label=Marketplace)](https://marketplace.visualstudio.com/items?itemName=zhuuchaofan.cobol-tools-for-netcobol)
 [![CI](https://github.com/zhuuchaofan/cobol-tools-for-netcobol/actions/workflows/ci.yml/badge.svg)](https://github.com/zhuuchaofan/cobol-tools-for-netcobol/actions/workflows/ci.yml)
 
 日本語 | [English](docs/README.en.md) | [简体中文](docs/README.zh-CN.md)
