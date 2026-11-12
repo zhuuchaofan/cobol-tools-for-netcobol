@@ -520,6 +520,123 @@ const codesAt = (diags) => diags.map((d) => `${d.line + 1}:${d.code}`).sort();
     assert.ok(t.some((x) => x.text === 'END-X' && x.scopes.includes('variable.other.netcobol')));
   });
 
+  console.log('data item sizes');
+  {
+    const { layout, sizeOf } = require('../out/core/datasize');
+    const { parseStructure } = require('../out/core/structure');
+    const lns = (...l) => l.map((t, i) => String((i + 1) * 10).padStart(6, '0') + ' ' + t);
+    const find = (src, key) => parseStructure(lns(...src), 'shiftjis').definitions.get(key)[0];
+    const bytes = (src, key, opts) => sizeOf(find(src, key), opts);
+    const OPT = { binary: 'none' };
+    const W = { binary: '2-4-8' };
+    const B = { binary: '1-2-4-8' };
+
+    await test('DISPLAY items: X, 9, S and V are not stored, edited pictures, repeat counts', () => {
+      assert.strictEqual(bytes([' 01  A PIC X(10).'], 'A', OPT).bytes, 10);
+      assert.strictEqual(bytes([' 01  A PIC S9(5)V99.'], 'A', OPT).bytes, 7);
+      assert.strictEqual(bytes([' 01  A PIC 9(3)P(2).'], 'A', OPT).bytes, 3);
+      assert.strictEqual(bytes([' 01  A PIC ZZ,ZZ9.99.'], 'A', OPT).bytes, 9);
+      assert.strictEqual(bytes([' 01  A PIC S9(4) SIGN IS LEADING SEPARATE CHARACTER.'], 'A', OPT).bytes, 5);
+      assert.strictEqual(bytes([' 01  A PIC S9(4).'], 'A', OPT).bytes, 4);
+    });
+    await test('N is 2 bytes per character (Shift_JIS)', () => {
+      assert.strictEqual(bytes([' 01  A PIC N(10).'], 'A', OPT).bytes, 20);
+    });
+    await test('COMP-3 / PACKED-DECIMAL: digits/2 + 1', () => {
+      assert.strictEqual(bytes([' 01  A PIC S9(9)V99 COMP-3.'], 'A', OPT).bytes, 6);
+      assert.strictEqual(bytes([' 01  A PIC 9(4) COMP-3.'], 'A', OPT).bytes, 3);
+      assert.strictEqual(bytes([' 01  A PIC S9(5) USAGE IS PACKED-DECIMAL.'], 'A', OPT).bytes, 3);
+      assert.strictEqual(bytes([' 01  A PIC X(3) COMP-3.'], 'A', OPT).reason, 'PIC');
+    });
+    await test('COMP / BINARY follow the chosen rule and are unknown without one', () => {
+      const src = [' 01  A PIC S9(4) COMP.'];
+      assert.strictEqual(bytes(src, 'A', OPT).bytes, undefined);
+      assert.ok(bytes(src, 'A', OPT).reason.includes('option'));
+      assert.strictEqual(bytes(src, 'A', W).bytes, 2);
+      assert.strictEqual(bytes([' 01  A PIC S9(5) BINARY.'], 'A', W).bytes, 4);
+      assert.strictEqual(bytes([' 01  A PIC S9(10) COMP.'], 'A', W).bytes, 8);
+      assert.strictEqual(bytes([' 01  A PIC S9(2) COMP.'], 'A', W).bytes, 2);
+      assert.strictEqual(bytes([' 01  A PIC S9(2) COMP.'], 'A', B).bytes, 1);
+      assert.strictEqual(bytes([' 01  A PIC S9(19) COMP.'], 'A', W).bytes, undefined);
+    });
+    await test('group totals, FILLER, 88 and a USAGE given on the group', () => {
+      const src = [
+        ' 01  REC.',
+        '     05  A     PIC X(6).',
+        '     05  FILLER PIC X(4).',
+        '     05  B     PIC S9(9)V99 COMP-3.',
+        '     05  F     PIC X.',
+        '         88  F-ON VALUE "1".',
+        ' 01  G COMP-3.',
+        '     05  X1    PIC 9(3).',
+        '     05  X2    PIC 9(2).'
+      ];
+      assert.strictEqual(bytes(src, 'REC', OPT).bytes, 6 + 4 + 6 + 1);
+      assert.strictEqual(bytes(src, 'G', OPT).bytes, 2 + 2);
+    });
+    await test('OCCURS multiplies; DEPENDING ON is unknown', () => {
+      const src = [
+        ' 01  T.',
+        '     05  E OCCURS 10 TIMES.',
+        '         10  P PIC X(3).',
+        '         10  Q PIC 9(2).',
+        '     05  V PIC X OCCURS 5.',
+        ' 01  D.',
+        '     05  N PIC 9.',
+        '     05  L PIC X OCCURS 1 TO 9 DEPENDING ON N.'
+      ];
+      assert.strictEqual(bytes(src, 'E', OPT).bytes, 50);
+      assert.strictEqual(bytes(src, 'T', OPT).bytes, 55);
+      assert.strictEqual(bytes(src, 'D', OPT).bytes, undefined);
+      assert.ok(bytes(src, 'D', OPT).reason.includes('DEPENDING'));
+    });
+    await test('REDEFINES shares storage and is not added', () => {
+      const src = [
+        ' 01  R.',
+        '     05  A PIC X(8).',
+        '     05  B REDEFINES A.',
+        '         10  B1 PIC X(3).',
+        '         10  B2 PIC X(5).',
+        '     05  C PIC X(2).'
+      ];
+      const rows = layout(find(src, 'R'), OPT);
+      const by = (k) => rows.find((r) => r.node.key === k);
+      assert.strictEqual(by('R').bytes, 10);
+      assert.strictEqual(by('B').bytes, 8);
+      assert.deepStrictEqual([by('A').offset, by('B').offset, by('B1').offset, by('B2').offset, by('C').offset], [0, 0, 0, 3, 8]);
+    });
+    await test('offsets inside a group', () => {
+      const src = [' 01  R.', '     05  A PIC X(6).', '     05  B PIC S9(9)V99 COMP-3.', '     05  C PIC N(2).'];
+      const rows = layout(find(src, 'R'), OPT);
+      assert.deepStrictEqual(rows.map((r) => [r.node.key, r.offset, r.bytes]), [['R', 0, 16], ['A', 0, 6], ['B', 6, 6], ['C', 12, 4]]);
+    });
+    await test('unknown parts make the group unknown but later offsets stay unknown only after them', () => {
+      const src = [' 01  R.', '     05  A PIC X(2).', '     05  B PIC S9(4) COMP.', '     05  C PIC X(3).'];
+      const rows = layout(find(src, 'R'), OPT);
+      assert.strictEqual(rows[0].bytes, undefined);
+      assert.ok(rows[0].reason.includes('05 B'));
+      assert.deepStrictEqual(rows.map((r) => r.offset), [0, 0, 2, undefined]);
+      assert.strictEqual(layout(find(src, 'R'), W)[0].bytes, 7);
+    });
+    await test('SYNC, INDEX/POINTER, COPY and missing PIC are unknown', () => {
+      assert.strictEqual(bytes([' 01  A PIC S9(4) COMP SYNC.'], 'A', W).reason, 'SYNC');
+      assert.strictEqual(bytes([' 01  A USAGE INDEX.'], 'A', W).reason, 'INDEX');
+      assert.strictEqual(bytes([' 01  A USAGE POINTER.'], 'A', W).reason, 'POINTER');
+      assert.strictEqual(bytes([' 01  A.', '     COPY ABC.'], 'A', W).bytes, undefined);
+      assert.strictEqual(bytes([' 01  A.'], 'A', W).reason, 'no PIC');
+    });
+    await test('entries that continue on the next line, and a name that looks like a clause', () => {
+      const src = [' 01  A', '        PIC S9(9)V99', '        COMP-3.', ' 01  COMP-X PIC X(4).'];
+      assert.strictEqual(bytes(src, 'A', OPT).bytes, 6);
+      assert.strictEqual(bytes(src, 'COMP-X', OPT).bytes, 4);
+    });
+    await test('sample.cob: URIAGE-REC = X(6) + N(10) + COMP-3 of 11 digits', () => {
+      const s = parseStructure(sjis('samples/sample.cob'), 'shiftjis');
+      assert.strictEqual(sizeOf(s.definitions.get('URIAGE-REC')[0], OPT).bytes, 6 + 20 + 6);
+      assert.strictEqual(sizeOf(s.definitions.get('WS-MSG')[0], OPT).bytes, 40);
+    });
+  }
+
   console.log(`\n${passed} passed, ${failed} failed`);
   process.exit(failed ? 1 : 0);
 })();

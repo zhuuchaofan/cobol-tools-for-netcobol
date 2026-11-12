@@ -27,6 +27,8 @@ export interface StructNode {
   key?: string;
   /** program: PROGRAM / CLASS / METHOD;  data: PIC / VALUE summary */
   detail?: string;
+  /** data: the whole data description entry as written (all its lines, up to the period) */
+  entry?: string;
   level?: number;
   startLine: number;
   endLine: number;
@@ -81,7 +83,7 @@ const NOT_PARAGRAPH = new Set([
   'END-MULTIPLY', 'END-DIVIDE', 'DECLARATIVES', 'STOP', 'NEXT'
 ]);
 /** words that can follow a level number when there is no data name */
-const CLAUSE_WORDS = new Set([
+export const CLAUSE_WORDS = new Set([
   'FILLER', 'PIC', 'PICTURE', 'VALUE', 'VALUES', 'REDEFINES', 'OCCURS', 'USAGE', 'COMP', 'COMP-1',
   'COMP-2', 'COMP-3', 'COMP-4', 'COMP-5', 'COMPUTATIONAL', 'BINARY', 'PACKED-DECIMAL', 'DISPLAY',
   'NATIONAL', 'INDEX', 'POINTER', 'SIGN', 'SYNC', 'SYNCHRONIZED', 'JUST', 'JUSTIFIED', 'BLANK',
@@ -377,7 +379,8 @@ export function parseStructure(allLines: readonly string[], mode: ColumnMode, fm
             node('data', label, ln, span(ln, line, isName ? nameIdx : first, isName ? word!.length : lv[1].length), {
               key: isName ? word!.toUpperCase() : undefined,
               level,
-              detail
+              detail,
+              entry: statementText(lines, ln, first)
             }),
             rankOf('data', level)
           );
