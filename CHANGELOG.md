@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.6.0
 - データ項目のバイト数：ホバーとコマンド「データ項目の配置（位置とバイト数）を表示」を追加。`PIC` / `COMP-3` / `COMP` / `OCCURS` / `REDEFINES` などから集団項目と基本項目の大きさを計算（NetCOBOL V10.5 文法書 5.4 に基づく）。`SYNCHRONIZED`・`OCCURS DEPENDING ON`・`INDEX` / `POINTER`・`P` を含む `PIC`・`COPY` を含む集団項目は「未計算」と理由を表示
 - アイコンを一新（固定形式の桁構成：一連番号・標識・A/B 領域・72 桁目をモチーフに）
 - README を刷新：特長の要約と、機能ごとのスクリーンショット（日本語・English・简体中文）を追加。チェック項目の一覧は折りたたみ表示に
