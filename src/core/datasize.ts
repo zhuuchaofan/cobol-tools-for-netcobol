@@ -22,7 +22,8 @@ export interface SizeOptions {
   binary: BinaryRule;
 }
 
-export const DEFAULT_SIZE_OPTIONS: SizeOptions = { binary: 'none' };
+/** The manual (5.4.15 USAGE, general rule 11) fixes 1-4 / 5-9 / 10-18 digits at 2 / 4 / 8 bytes. */
+export const DEFAULT_SIZE_OPTIONS: SizeOptions = { binary: '2-4-8' };
 
 /** Shift_JIS: one national (N) character is 2 bytes. */
 const NATIONAL_BYTES = 2;
@@ -120,7 +121,7 @@ interface Pic {
   national: number; // number of N
 }
 
-const PIC_CHARS = /^[AX9SVPNZ*B0/,.+\-$CRD]+$/;
+const PIC_CHARS = /^[AX9SVPNZ*B0/,.+\-$CRDE]+$/;
 
 function expandPic(pic: string): Pic | undefined {
   let s = pic.toUpperCase().replace(/\.$/, '');
@@ -168,9 +169,10 @@ function measure(
     if (c.occurs.depending || c.occurs.max !== undefined) return unknown('OCCURS DEPENDING ON');
     occurs = c.occurs.min;
   }
-  if (c.sync) return unknown('SYNC', occurs);
-
   const usage = c.usage ?? inheritedUsage;
+  // SYNCHRONIZED only has an effect on binary, COMP-1/2, COMP-5 and INDEX items (5.4.12); it can
+  // insert slack bytes, which is not computed yet. On any other item it is ignored.
+  if (c.sync && usage !== undefined && /^(COMP|BINARY|COMP-[125])$|^INDEX$/.test(usage)) return unknown('SYNC', occurs);
   const kids = node.children.filter((k) => k.kind === 'copy' || (k.kind === 'data' && k.level !== 88 && k.level !== 66));
 
   // ---- group item
@@ -213,6 +215,9 @@ function measure(
   if (!c.pic) return unknown('no PIC', occurs);
   const pic = expandPic(c.pic);
   if (!pic) return unknown('PIC', occurs);
+  // the manual (5.4.7) says P is counted in the item size but also that it only scales the value,
+  // so whether it occupies storage is not settled: do not guess
+  if (pic.chars.includes('P')) return unknown('P', occurs);
 
   let unit: number | undefined;
   let why: string | undefined;
@@ -223,7 +228,7 @@ function measure(
   } else if (usage === 'COMP-3' || usage === 'PACKED-DECIMAL') {
     if (!pic.numeric || pic.digits < 1) why = 'PIC';
     else unit = Math.floor(pic.digits / 2) + 1;
-  } else if (usage && /^(COMP|BINARY|COMP-[45X])$/.test(usage)) {
+  } else if (usage && /^(COMP|BINARY|COMP-5)$/.test(usage)) {
     if (!pic.numeric) why = 'PIC';
     else {
       unit = binaryBytes(pic.digits, opts.binary);

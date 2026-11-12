@@ -534,10 +534,20 @@ const codesAt = (diags) => diags.map((d) => `${d.line + 1}:${d.code}`).sort();
     await test('DISPLAY items: X, 9, S and V are not stored, edited pictures, repeat counts', () => {
       assert.strictEqual(bytes([' 01  A PIC X(10).'], 'A', OPT).bytes, 10);
       assert.strictEqual(bytes([' 01  A PIC S9(5)V99.'], 'A', OPT).bytes, 7);
-      assert.strictEqual(bytes([' 01  A PIC 9(3)P(2).'], 'A', OPT).bytes, 3);
+      assert.strictEqual(bytes([' 01  A PIC 9(3)P(2).'], 'A', OPT).reason, 'P');
       assert.strictEqual(bytes([' 01  A PIC ZZ,ZZ9.99.'], 'A', OPT).bytes, 9);
       assert.strictEqual(bytes([' 01  A PIC S9(4) SIGN IS LEADING SEPARATE CHARACTER.'], 'A', OPT).bytes, 5);
       assert.strictEqual(bytes([' 01  A PIC S9(4).'], 'A', OPT).bytes, 4);
+    });
+    await test('manual 5.4.7 / 5.4.12 / 5.4.15: defaults, P, E, COMP-4, SYNC scope', () => {
+      const { DEFAULT_SIZE_OPTIONS } = require('../out/core/datasize');
+      assert.strictEqual(bytes([' 01  A PIC S9(9) COMP.'], 'A', DEFAULT_SIZE_OPTIONS).bytes, 4);
+      assert.strictEqual(bytes([' 01  A PIC S9(5) COMP-5.'], 'A', DEFAULT_SIZE_OPTIONS).bytes, 4);
+      assert.strictEqual(bytes([' 01  A PIC S9(4) COMP-4.'], 'A', DEFAULT_SIZE_OPTIONS).reason, 'COMP-4');
+      assert.strictEqual(bytes([' 01  A PIC 9(3)P(2).'], 'A', DEFAULT_SIZE_OPTIONS).reason, 'P');
+      assert.strictEqual(bytes([' 01  A PIC +9.9E+99.'], 'A', DEFAULT_SIZE_OPTIONS).bytes, 8);
+      assert.strictEqual(bytes([' 01  A PIC X(4) SYNC.'], 'A', DEFAULT_SIZE_OPTIONS).bytes, 4);
+      assert.strictEqual(bytes([' 01  A PIC S9(4) COMP SYNC.'], 'A', DEFAULT_SIZE_OPTIONS).reason, 'SYNC');
     });
     await test('N is 2 bytes per character (Shift_JIS)', () => {
       assert.strictEqual(bytes([' 01  A PIC N(10).'], 'A', OPT).bytes, 20);
