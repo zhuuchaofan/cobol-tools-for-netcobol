@@ -14,3 +14,4 @@ CONTRIBUTING.md
 .gitignore
 .gitattributes
 samples/**
+.vs/**

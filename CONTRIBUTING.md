@@ -35,6 +35,7 @@ VS Code でこのフォルダーを開いて `F5` を押すと、拡張機能を
 | `l10n/`, `package.nls*.json` | メッセージ（英語が原文、`ja` / `zh-cn` が翻訳） |
 | `samples/` | Shift_JIS・CRLF のサンプル（テストでも使用） |
 | `test/run-tests.js` | テスト（vscode 不要、Node だけで動く） |
+| `scripts/screenshots/` | README のスクリーンショット（`npm run screenshots`）とアイコン（`images/icon.svg` → `npm run icon`）の生成。実際の文法・チェック・アウトラインのコードで描画し、Chrome / Edge のヘッドレスモードで撮影します。`samples/` やメッセージを変えたら撮り直してください |
 
 `src/core/` は `vscode` を import しないでください。Node だけでテストできる状態を保ちます。
 
