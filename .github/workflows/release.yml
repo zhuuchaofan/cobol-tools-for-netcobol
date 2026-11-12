@@ -23,10 +23,11 @@ jobs:
     env:
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          # @vscode/vsce 4 (needed for --oidc) requires Node 22 or later
+          node-version: 24
           cache: npm
       - run: npm ci
 
@@ -46,12 +47,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           node scripts/release-notes.js > notes.md
-          gh release create "$GITHUB_REF_NAME" dist/*.vsix --title "$GITHUB_REF_NAME" --notes-file notes.md
+          # re-running the workflow (e.g. after a Marketplace failure) must not fail here
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" dist/*.vsix --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/*.vsix --title "$GITHUB_REF_NAME" --notes-file notes.md
+          fi
 
       - name: Publish to Visual Studio Marketplace (Trusted Publishing)
         if: vars.PUBLISH_MARKETPLACE == 'true'
-        run: npx vsce publish --oidc --packagePath dist/*.vsix
+        run: npx vsce publish --oidc --skip-duplicate --packagePath dist/*.vsix
 
       - name: Publish to Open VSX
         if: env.OVSX_PAT != ''
-        run: npx ovsx publish dist/*.vsix -p "$OVSX_PAT"
+        run: npx ovsx publish dist/*.vsix -p "$OVSX_PAT" --skip-duplicate

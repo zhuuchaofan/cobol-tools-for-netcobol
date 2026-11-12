@@ -29,19 +29,28 @@ git push -u origin main
 
 ## 2. Visual Studio Marketplace
 
-Azure DevOps 的全局 PAT 在 **2026-12-01 退役**，所以本仓库用 **Trusted Publishing（GitHub OIDC）**，不需要保存任何 token。
+Azure DevOps 的全局 PAT 在 **2026-12-01 退役**，所以本仓库用 **Trusted Publishing（GitHub OIDC）**，不保存任何 token。
+（2026-10-28 微软公布；需要 `@vscode/vsce` 4.0 以上的 `vsce publish --oidc`，vsce 4 要求 Node 22 以上，本仓库已满足。）
 
 1. 打开 <https://marketplace.visualstudio.com/manage>，用 Microsoft 账号登录 → **Create publisher**
    - ID：`zhuuchaofan`（创建后不能改；如果被占用，就换一个，并同时改 `package.json` 的 `publisher` 和 README 里的 `zhuuchaofan.cobol-tools-for-netcobol`）
-2. 进入该 publisher → **Trusted Publishing** → **Create policy**
-   - Repository owner：`zhuuchaofan`
-   - Repository：`cobol-tools-for-netcobol`
-   - Workflow file：`release.yml`
-   - Environment：留空
-3. GitHub 仓库 → Settings → Secrets and variables → Actions → **Variables** → 新建 `PUBLISH_MARKETPLACE` = `true`
+2. 进入该 publisher → **Trusted Publishing** 标签 → 展开 **Create**，填写：
 
-> Trusted Publishing 是比较新的功能，我没法在这里实际验证。如果第一次发布在这一步失败：
-> 从 GitHub Release 下载 `.vsix`，在上面的 manage 页面 **New extension → Visual Studio Code** 直接上传即可（网页上传不需要 token），之后再排查。
+   | 字段 | 值 |
+   |---|---|
+   | Policy name | `GitHub release` （随意） |
+   | Repository owner | `zhuuchaofan` |
+   | Repository | `cobol-tools-for-netcobol` |
+   | Workflow | `release.yml` |
+   | Environment (optional) | 留空 |
+
+3. GitHub 仓库 → Settings → Secrets and variables → Actions → **Variables** → 新建 `PUBLISH_MARKETPLACE` = `true`
+4. 打 tag 发布（见第 4 节）
+
+> **第一次发布**：官方文档没有写明「Marketplace 上还不存在的扩展」能不能第一次就用 OIDC 发布。
+> 如果 Release 工作流里 *Publish to Visual Studio Marketplace* 这一步失败：
+> 从 GitHub Release 下载 `.vsix` → manage 页面 **New extension → Visual Studio Code** 上传（网页上传不需要 token）。
+> 之后的版本都会通过 OIDC 自动发布。工作流可以直接 **Re-run**：GitHub Release 已存在时只更新附件，Marketplace / Open VSX 上已有的版本会被跳过（`--skip-duplicate`）。
 
 ## 3. Open VSX（VSCodium / Cursor / Windsurf 等用）
 
