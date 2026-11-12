@@ -1,0 +1,40 @@
+name: 不具合報告 / Bug report
+description: ハイライトやチェックの誤り、動作しないなど / Wrong highlighting, false positives, crashes
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **お客様のソースコード・設計書は貼らないでください。** 再現できる最小限のサンプルを自分で書いてください。
+        **Do not paste customer source code.** Please write a minimal sample that reproduces the problem.
+  - type: textarea
+    id: what
+    attributes:
+      label: 内容 / What happened
+      description: 何が起きて、本来どうなるべきか / What happened and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: 再現サンプル / Minimal sample
+      description: 1〜6桁の一連番号や7桁目も含めてそのまま貼ってください / Paste the lines as-is, including columns 1-7
+      render: cobol
+  - type: input
+    id: rule
+    attributes:
+      label: ルールコード / Rule code
+      placeholder: NC003
+  - type: dropdown
+    id: encoding
+    attributes:
+      label: 文字コード / Encoding
+      options: [Shift_JIS, UTF-8, その他 / other]
+  - type: input
+    id: versions
+    attributes:
+      label: バージョン / Versions
+      description: 拡張機能・VS Code・OS / Extension, VS Code, OS
+      placeholder: 0.3.0 / VS Code 1.106 / Windows 11
+    validations:
+      required: true

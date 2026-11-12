@@ -1,0 +1,21 @@
+name: 機能の要望 / Feature request
+description: あると便利な機能 / Something that would help
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: 困っていること / Problem
+      description: どんな作業で何が不便か / What you are trying to do and what gets in the way
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: 欲しい動き / Proposed behaviour
+  - type: textarea
+    id: sample
+    attributes:
+      label: サンプル（任意）/ Sample (optional)
+      description: お客様のコードは貼らないでください / No customer code, please
+      render: cobol

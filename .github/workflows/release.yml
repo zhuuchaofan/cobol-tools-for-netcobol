@@ -1,0 +1,57 @@
+# Push a tag "v<version>" (same as package.json) to release.
+#
+#   GitHub Release : always
+#   Marketplace    : when repository variable PUBLISH_MARKETPLACE == 'true'
+#                    (Trusted Publishing / OIDC: no secret; the Marketplace policy
+#                     must name this repository and the workflow file "release.yml")
+#   Open VSX       : when secret OVSX_PAT is set
+#
+# See docs/PUBLISHING.md.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # create the GitHub Release
+  id-token: write # Marketplace Trusted Publishing (OIDC)
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Tag must match package.json version
+        run: |
+          v="v$(node -p "require('./package.json').version")"
+          if [ "$v" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json version $v"
+            exit 1
+          fi
+
+      - name: Test and package
+        run: npm run package
+
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/release-notes.js > notes.md
+          gh release create "$GITHUB_REF_NAME" dist/*.vsix --title "$GITHUB_REF_NAME" --notes-file notes.md
+
+      - name: Publish to Visual Studio Marketplace (Trusted Publishing)
+        if: vars.PUBLISH_MARKETPLACE == 'true'
+        run: npx vsce publish --oidc --packagePath dist/*.vsix
+
+      - name: Publish to Open VSX
+        if: env.OVSX_PAT != ''
+        run: npx ovsx publish dist/*.vsix -p "$OVSX_PAT"

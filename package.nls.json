@@ -1,0 +1,22 @@
+{
+  "ext.description": "Unofficial NetCOBOL (fixed format) support: syntax highlighting, Shift_JIS byte-accurate column checks, sequence number renumbering, outline and go to definition.",
+  "cmd.toggleLineComment": "Toggle Comment (column 7 '*')",
+  "cfg.columnCounting": "How to count columns for the fixed format (sequence 1-6, indicator 7, area A 8-11, area B 12-72, identification 73-80).",
+  "cfg.columnCounting.shiftjis": "Shift_JIS bytes: full-width characters count as 2 columns, ASCII and half-width katakana as 1 (matches NetCOBOL on Shift_JIS sources).",
+  "cfg.columnCounting.utf8": "UTF-8 bytes: for sources compiled as UTF-8.",
+  "cfg.columnCounting.character": "One column per character.",
+  "cfg.diagnostics.enabled": "Enable NetCOBOL format diagnostics.",
+  "cfg.diagnostics.maxLineLength": "Warn when a line exceeds this many columns (0 = off).",
+  "cfg.diagnostics.disabledRules": "Diagnostic rule codes to turn off, e.g. [\"NC010\"].",
+  "cfg.dimFixedAreas": "Dim the sequence area (columns 1-6) and identification area (columns 73-80).",
+  "cmd.renumberSequence": "Renumber Sequence Area (columns 1-6)",
+  "cfg.sequence.start": "First number used when renumbering the sequence area (columns 1-6).",
+  "cfg.sequence.step": "Increment used when renumbering the sequence area.",
+  "cfg.copybook.paths": "Folders searched for copybooks (`COPY name`) after the folder of the current file. Relative paths are resolved from the workspace folder; `${workspaceFolder}` is supported. `COPY name OF lib` also looks in a sub-folder named `lib`.",
+  "cfg.copybook.extensions": "File extensions tried for a copybook name, in order (matched case-insensitively). \"\" means the name as written.",
+  "cfg.sourceFormat": "Source reference format (NetCOBOL compiler option SRF).",
+  "cfg.sourceFormat.auto": "Read @OPTIONS SRF(...) in the source; fixed format when absent.",
+  "cfg.sourceFormat.fixed": "Fixed format: columns 73-80 are the identification area.",
+  "cfg.sourceFormat.variable": "Variable format: no right margin after column 72.",
+  "cfg.sourceFormat.free": "Free format: column checks, dimming and renumbering are off."
+}
