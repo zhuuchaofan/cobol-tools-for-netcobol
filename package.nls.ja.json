@@ -1,0 +1,22 @@
+{
+  "ext.description": "NetCOBOL（固定形式）向けの非公式拡張機能：構文ハイライト、Shift_JIS バイト基準の桁チェック、一連番号の振り直し、アウトライン、定義へ移動。",
+  "cmd.toggleLineComment": "注記行の切り替え（7桁目 '*'）",
+  "cfg.columnCounting": "固定形式の桁の数え方（一連番号 1〜6、標識 7、A領域 8〜11、B領域 12〜72、プログラム識別 73〜80）。",
+  "cfg.columnCounting.shiftjis": "Shift_JIS バイト数：全角は2桁、ASCII・半角カナは1桁（Shift_JIS ソースの NetCOBOL と同じ）。",
+  "cfg.columnCounting.utf8": "UTF-8 バイト数：UTF-8 でコンパイルするソース向け。",
+  "cfg.columnCounting.character": "1文字を1桁として数える。",
+  "cfg.diagnostics.enabled": "NetCOBOL の書式チェックを有効にする。",
+  "cfg.diagnostics.maxLineLength": "この桁数を超える行を警告する（0 で無効）。",
+  "cfg.diagnostics.disabledRules": "無効にするルールコード（例: [\"NC010\"]）。",
+  "cfg.dimFixedAreas": "一連番号領域（1〜6桁）とプログラム識別領域（73〜80桁）を薄く表示する。",
+  "cmd.renumberSequence": "一連番号（1〜6桁）の振り直し",
+  "cfg.sequence.start": "一連番号を振り直すときの開始番号。",
+  "cfg.sequence.step": "一連番号を振り直すときの増分。",
+  "cfg.copybook.paths": "登録集原文（`COPY 名前`）を探すフォルダー。編集中のファイルと同じフォルダーの次に検索します。相対パスはワークスペースフォルダー基準、`${workspaceFolder}` も使えます。`COPY 名前 OF ライブラリ` の場合は `ライブラリ` という名前のサブフォルダーも探します。",
+  "cfg.copybook.extensions": "登録集原文の名前に付けて試す拡張子（順番どおり、大文字小文字は区別しない）。\"\" は名前そのまま。",
+  "cfg.sourceFormat": "正書法の形式（NetCOBOL の翻訳オプション SRF）。",
+  "cfg.sourceFormat.auto": "ソース中の @OPTIONS SRF(...) から判定。なければ固定形式。",
+  "cfg.sourceFormat.fixed": "固定形式：73〜80桁はプログラム識別領域。",
+  "cfg.sourceFormat.variable": "可変形式：72桁の右端制限なし。",
+  "cfg.sourceFormat.free": "自由形式：桁チェック・薄色表示・一連番号の振り直しを行わない。"
+}
